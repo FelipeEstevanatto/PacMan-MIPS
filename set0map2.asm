@@ -3,8 +3,8 @@
 .text
 
 
-.macro set0
-set0:
+.macro Draw_Map2
+Draw_Map2:
 lui $10, 0x1001		#Setar o primeiro pixel
 sw $20, 0($10)
 sw $20, 4($10)

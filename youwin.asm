@@ -1,5 +1,5 @@
-.macro youwin
-youwin:
+.macro Show_YouWin
+Show_YouWin:
 addi $20, $0, 0x000000	#Cor preta
 addi $21, $0, 0x4169E1	#Cor azul
 addi $22, $0, 0xffff00	#Cor amarela

@@ -3,12 +3,18 @@
 .include"set0youwin.asm"
 .include"set0map1.asm"
 .data
+.eqv  KEYBOARD_ADDR, 68719411204($zero)
+.eqv KEY_A 97
+.eqv KEY_D 100
+.eqv KEY_W 119
+.eqv KEY_S 115
 
-str1: .asciiz "ganhou"
+str1: .asciiz "Game_WinAndAdvance"
+
 .macro mov
 .text
 # Main player and ghosts start position initialization 
-main_pacman:
+Game_Init:
     lui $10, 0x1001		# base address of the bitmap display memory (first pixel)
     add $8, $0, $10     # $8 holds the current position of the main player
     add $9, $0, $10     # $9 holds the current position of ghost 1
@@ -21,13 +27,13 @@ main_pacman:
     addi $27, $0, 0     # maybe direction tracker for ghost 2
     addi $28, $0, 0     # maybe direction tracker for ghost 3
 
-mov:
-    lw $15, 68719411204($zero)  #Receber o valor do teclado
-    beq $15, 97, esquerda
-    beq $15, 100, direita
-    beq $15, 119, cima
-    beq $15, 115, baixo
-    j mov
+Input_PollAndDispatch:
+    lw $15, KEYBOARD_ADDR  #Receber o valor do teclado
+    beq $15, KEY_A, esquerda
+    beq $15, KEY_D, direita
+    beq $15, KEY_W, cima
+    beq $15, KEY_S, baixo
+    j Input_PollAndDispatch
 
 pinta_pac_direita:          #Movimento pac direira
     sw $22, 4860($8)
@@ -39,7 +45,7 @@ pinta_pac_direita:          #Movimento pac direira
     jr $31
 
 para_pac_direita:          # Pauses Pacman movement on right wall
-    lw $0, 68719411204($zero)
+    lw $0, KEYBOARD_ADDR
     sw $22, 4860($8)
     sw $22, 4864($8)
     sw $22, 5372($8)
@@ -56,19 +62,19 @@ pintafanDP3:
     jal pinta_fantasma2
     jal pinta_fantasma3
     lw $11, 4860($8)  # Supondo que 4860 seja a posição à esquerda
-    beq $11, $24, morreu
-    beq $11, $25, morreu                               #colisão com fantasma
-    beq $11, $19, morreu
+    beq $11, $24, Game_Over
+    beq $11, $25, Game_Over                               #colisão com fantasma
+    beq $11, $19, Game_Over
     jal delay_pac
     jal apaga_pac_direita
     jal apaga_fantasma1
     jal apaga_fantasma2
     jal apaga_fantasma3
-    lw $15, 68719411204($zero)                         # Keep on loop until direction change
-    beq $15, 97, esquerda
-    beq $15, 100, direita
-    beq $15, 119, cima
-    beq $15, 115, baixo
+    lw $15, KEYBOARD_ADDR                         # Keep on loop until direction change
+    beq $15, KEY_A, esquerda
+    beq $15, KEY_D, direita
+    beq $15, KEY_W, cima
+    beq $15, KEY_S, baixo
     j para_pac_direita
 
 
@@ -78,7 +84,7 @@ apaga_pac_direita:                           #apaga o pac man virado para direit
     sw $20, 5372($8)
     sw $20, 5884($8)
     sw $20, 5888($8)
-    addi $16, $0, 50000       # Reduced delay - ghosts were moving faster
+    addi $16, $0, 10000       # Reduced delay - ghosts were moving faster
     jr $31
 
 
@@ -88,11 +94,11 @@ pinta_pac_esquerda:             #Movimento pac esquerda
     sw $22, 5376($8)
     sw $22, 5884($8)
     sw $22, 5888($8)
-    addi $16, $0, 50000       # Reduced delay - ghosts were moving faster
+    addi $16, $0, 10000       # Reduced delay - ghosts were moving faster
     jr $31
 
 para_pac_esquerda:
-    lw $0, 68719411204($zero)
+    lw $0, KEYBOARD_ADDR
     sw $22, 4860($8)
     sw $22, 4864($8)
     sw $22, 5376($8)
@@ -109,19 +115,19 @@ pintafanEP3:
     jal pinta_fantasma2
     jal pinta_fantasma3
     lw $11, 4860($8)  # Supondo que 4860 seja a posição à esquerda
-    beq $11, $24, morreu
-    beq $11, $25, morreu
-    beq $11, $19, morreu
+    beq $11, $24, Game_Over
+    beq $11, $25, Game_Over
+    beq $11, $19, Game_Over
     jal delay_pac
     jal apaga_pac_esquerda
     jal apaga_fantasma1
     jal apaga_fantasma2
     jal apaga_fantasma3
-    lw $15, 68719411204($zero)
-    beq $15, 97, esquerda
-    beq $15, 100, direita
-    beq $15, 119, cima
-    beq $15, 115, baixo
+    lw $15, KEYBOARD_ADDR
+    beq $15, KEY_A, esquerda
+    beq $15, KEY_D, direita
+    beq $15, KEY_W, cima
+    beq $15, KEY_S, baixo
     j para_pac_esquerda
 #código para outras direcoes
 
@@ -131,7 +137,7 @@ apaga_pac_esquerda:
     sw $20, 5376($8)
     sw $20, 5884($8)
     sw $20, 5888($8)
-    addi $16, $0, 50000       # Reduced delay - ghosts were moving faster
+    addi $16, $0, 10000       # Reduced delay - ghosts were moving faster
     jr $31
 
 
@@ -141,7 +147,7 @@ pinta_pac_cima:
     sw $22, 5372($8)
     sw $22, 5376($8)
     sw $22, 5380($8)
-    addi $16, $0, 50000       # Reduced delay - ghosts were moving faster
+    addi $16, $0, 10000       # Reduced delay - ghosts were moving faster
     jr $31
 
 
@@ -151,12 +157,12 @@ apaga_pac_cima:
     sw $20, 5372($8)
     sw $20, 5376($8)
     sw $20, 5380($8)
-    addi $16, $0, 50000       # Reduced delay - ghosts were moving faster
+    addi $16, $0, 10000       # Reduced delay - ghosts were moving faster
     jr $31
 
 
 para_pac_cima:
-    lw $0, 68719411204($zero)
+    lw $0, KEYBOARD_ADDR
     sw $22, 4860($8)
     sw $22, 4868($8)
     sw $22, 5372($8)
@@ -173,19 +179,19 @@ pintafanCP3:
     jal pinta_fantasma2
     jal pinta_fantasma3
     lw $11, 4860($8)  # Supondo que 4860 seja a posição à esquerda
-    beq $11, $24, morreu
-    beq $11, $25, morreu
-    beq $11, $19, morreu
+    beq $11, $24, Game_Over
+    beq $11, $25, Game_Over
+    beq $11, $19, Game_Over
     jal delay_pac
     jal apaga_pac_cima
     jal apaga_fantasma1
     jal apaga_fantasma2
     jal apaga_fantasma3
-    lw $15, 68719411204($zero)
-    beq $15, 97, esquerda
-    beq $15, 100, direita
-    beq $15, 119, cima
-    beq $15, 115, baixo
+    lw $15, KEYBOARD_ADDR
+    beq $15, KEY_A, esquerda
+    beq $15, KEY_D, direita
+    beq $15, KEY_W, cima
+    beq $15, KEY_S, baixo
     j para_pac_cima
 
 
@@ -195,7 +201,7 @@ pinta_pac_baixo:
     sw $22, 4868($8)
     sw $22, 5372($8)
     sw $22, 5380($8)
-    addi $16, $0, 50000       # Reduced delay - ghosts were moving faster
+    addi $16, $0, 10000       # Reduced delay - ghosts were moving faster
     jr $31
 
 
@@ -205,11 +211,11 @@ apaga_pac_baixo:
     sw $20, 4868($8)
     sw $20, 5372($8)
     sw $20, 5380($8)
-    addi $16, $0, 50000       # Reduced delay - ghosts were moving faster
+    addi $16, $0, 10000       # Reduced delay - ghosts were moving faster
     jr $31
 
 para_pac_baixo:
-    lw $0, 68719411204($zero)
+    lw $0, KEYBOARD_ADDR
     sw $22, 4860($8)
     sw $22, 4864($8)
     sw $22, 4868($8)
@@ -226,33 +232,33 @@ pintafanBP3:
     jal pinta_fantasma2
     jal pinta_fantasma3
     lw $11, 4860($8)  # Supondo que 4860 seja a posição à esquerda
-    beq $11, $24, morreu
-    beq $11, $25, morreu
-    beq $11, $19, morreu
+    beq $11, $24, Game_Over
+    beq $11, $25, Game_Over
+    beq $11, $19, Game_Over
     jal delay_pac
     jal apaga_pac_baixo
     jal apaga_fantasma1
     jal apaga_fantasma2
     jal apaga_fantasma3
-    lw $15, 68719411204($zero)
-    beq $15, 97, esquerda
-    beq $15, 100, direita
-    beq $15, 119, cima
-    beq $15, 115, baixo
+    lw $15, KEYBOARD_ADDR
+    beq $15, KEY_A, esquerda
+    beq $15, KEY_D, direita
+    beq $15, KEY_W, cima
+    beq $15, KEY_S, baixo
     j para_pac_baixo
 
 
 esquerda:
-    sw $0, 68719411204($zero)
+    sw $0, KEYBOARD_ADDR
     jal apaga_pac_esquerda
     j move_pac_esquerda
 
 move_pac_esquerda:
-    lw $15, 68719411204($zero)
-    beq $15, 97, esquerda
-    beq $15, 100, direita
-    beq $15, 119, cima
-    beq $15, 115, baixo
+    lw $15, KEYBOARD_ADDR
+    beq $15, KEY_A, esquerda
+    beq $15, KEY_D, direita
+    beq $15, KEY_W, cima
+    beq $15, KEY_S, baixo
     lw $11, 4856($8)  # Supondo que 4860 seja a posição à esquerda
     lw $12, 5368($8)  # Supondo que 4860 seja a posição à esquerda
     lw $13, 5880($8)  # Supondo que 4860 seja a posição à esquerda
@@ -263,7 +269,7 @@ move_pac_esquerda:
     jal cont_Esq
 pontuaEsq:
     addi $29, $29, 200
-    beq $29, 1000, ganhou
+    beq $29, 1000, Game_WinAndAdvance
 cont_Esq:
     addi $8, $8, -4
     addi $26, $0, 1
@@ -278,9 +284,9 @@ pintafanE3:
     jal pinta_fantasma2
     jal pinta_fantasma3
     lw $11, 4860($8)  # Supondo que 4860 seja a posição à esquerda
-    beq $11, $24, morreu
-    beq $11, $25, morreu
-    beq $11, $19, morreu
+    beq $11, $24, Game_Over
+    beq $11, $25, Game_Over
+    beq $11, $19, Game_Over
     jal delay_pac
     jal apaga_pac_esquerda
     jal apaga_fantasma1
@@ -289,16 +295,16 @@ pintafanE3:
     j move_pac_esquerda
 
 direita:
-    sw $0, 68719411204($zero)
+    sw $0, KEYBOARD_ADDR
     jal apaga_pac_direita
     j move_pac_direita
 
 move_pac_direita:
-    lw $15, 68719411204($zero)
-    beq $15, 97, esquerda
-    beq $15, 100, direita
-    beq $15, 119, cima
-    beq $15, 115, baixo
+    lw $15, KEYBOARD_ADDR
+    beq $15, KEY_A, esquerda
+    beq $15, KEY_D, direita
+    beq $15, KEY_W, cima
+    beq $15, KEY_S, baixo
     lw $11, 4872($8)  # Supondo que 4860 seja a posição à esquerda
     lw $12, 5384($8)  # Supondo que 4860 seja a posição à esquerda
     lw $13, 5896($8)  # Supondo que 4860 seja a posição à esquerda
@@ -309,7 +315,7 @@ move_pac_direita:
     jal cont_Dir
 pontuaDir:
     addi $29, $29, 200
-    beq $29, 200, ganhou
+    beq $29, 200, Game_WinAndAdvance
 cont_Dir:
     addi $8, $8, 4
     addi $26, $0, 2
@@ -324,9 +330,9 @@ pintafanD3:
     jal pinta_fantasma2
     jal pinta_fantasma3
     lw $11, 4860($8)  # Supondo que 4860 seja a posição à esquerda
-    beq $11, $24, morreu
-    beq $11, $25, morreu
-    beq $11, $19, morreu
+    beq $11, $24, Game_Over
+    beq $11, $25, Game_Over
+    beq $11, $19, Game_Over
     jal delay_pac
     jal apaga_pac_direita
     jal apaga_fantasma1
@@ -334,41 +340,40 @@ pintafanD3:
     jal apaga_fantasma3
     j move_pac_direita
 
-morreu:
+Game_Over:
     set0gameover()          #perdeu o jogo
     jr $31
-ganhou:
+Game_WinAndAdvance:
     addi $29, $0, 0
     lui $8, 0x1001		#Setar o primeiro pixel
     lui $10, 0x1001		#Setar o primeiro pixel
     lui $9, 0x1001		#Setar o primeiro pixel
     lui $18, 0x1001		#Setar o primeiro pixel
     addi $17, $17, 1
-    beq $17, 1, set0map2    #chama segunda fase
-    beq $17, 2, set0map1    #chama terceira fase
-    beq $17, 3 youwin       #completou tudo
-set0map2:
+    beq $17, 1, Load_Map2    #chama segunda fase
+    beq $17, 2, Load_Map1    #chama terceira fase
+    beq $17, 3 Show_YouWin       #completou tudo
+Load_Map2:
     set0()
     jr $31
-set0map1:
-    setmap1()
+Load_Map1:
+    Draw_Map1()
     jr $31
-youwin:
+Show_YouWin:
     set0youwin()
     jr $31
 
-
 cima:
-    sw $0, 68719411204($zero)
+    sw $0, KEYBOARD_ADDR
     jal apaga_pac_cima
     j move_pac_cima
 
 move_pac_cima:
-    lw $15, 68719411204($zero)
-    beq $15, 97, esquerda
-    beq $15, 100, direita
-    beq $15, 119, cima
-    beq $15, 115, baixo
+    lw $15, KEYBOARD_ADDR
+    beq $15, KEY_A, esquerda
+    beq $15, KEY_D, direita
+    beq $15, KEY_W, cima
+    beq $15, KEY_S, baixo
     lw $11, 4348($8)  # Supondo que 4860 seja a posição à esquerda
     lw $12, 4352($8)  # Supondo que 4860 seja a posição à esquerda
     lw $13, 4356($8)  # Supondo que 4860 seja a posição à esquerda
@@ -379,7 +384,7 @@ move_pac_cima:
     jal cont_Cima
 pontuaCima:
     addi $29, $29, 200
-    beq $29, 1000, ganhou
+    beq $29, 1000, Game_WinAndAdvance
 cont_Cima:
     addi $8, $8, -512
     addi $26, $0, 3
@@ -394,9 +399,9 @@ pintafanC3:
     jal pinta_fantasma2
     jal pinta_fantasma3
     lw $11, 4860($8)  # Supondo que 4860 seja a posição à esquerda
-    beq $11, $24, morreu
-    beq $11, $25, morreu
-    beq $11, $19, morreu
+    beq $11, $24, Game_Over
+    beq $11, $25, Game_Over
+    beq $11, $19, Game_Over
     jal delay_pac
     jal apaga_pac_cima
     jal apaga_fantasma1
@@ -405,16 +410,16 @@ pintafanC3:
     j move_pac_cima
 
 baixo:
-    sw $0, 68719411204($zero)
+    sw $0, KEYBOARD_ADDR
     jal apaga_pac_baixo
     j move_pac_baixo
 
 move_pac_baixo:
-    lw $15, 68719411204($zero)
-    beq $15, 97, esquerda
-    beq $15, 100, direita
-    beq $15, 119, cima
-    beq $15, 115, baixo
+    lw $15, KEYBOARD_ADDR
+    beq $15, KEY_A, esquerda
+    beq $15, KEY_D, direita
+    beq $15, KEY_W, cima
+    beq $15, KEY_S, baixo
     lw $11, 6396($8)  # Supondo que 4860 seja a posição à esquerda
     lw $12, 6400($8)  # Supondo que 4860 seja a posição à esquerda
     lw $13, 6404($8)  # Supondo que 4860 seja a posição à esquerda
@@ -425,7 +430,7 @@ move_pac_baixo:
     jal cont_baixo
 pontuaBaixo:
     addi $29, $29, 200
-    beq $29, 1000, ganhou
+    beq $29, 1000, Game_WinAndAdvance
 cont_baixo:
     addi $8, $8, 512
     addi $26, $0, 4
@@ -440,9 +445,9 @@ pintafanB3:
     jal pinta_fantasma2
     jal pinta_fantasma3
     lw $11, 4860($8)  # Supondo que 4860 seja a posição à esquerda
-    beq $11, $24, morreu
-    beq $11, $25, morreu
-    beq $11, $19, morreu
+    beq $11, $24, Game_Over
+    beq $11, $25, Game_Over
+    beq $11, $19, Game_Over
     jal delay_pac
     jal apaga_pac_baixo
     jal apaga_fantasma1
@@ -616,9 +621,9 @@ decide_CimaDireita:
     bgt $a0, $30, cimafan
     jal direitafan
     
-   decideBED:
-   addi $30, $0, 0
-   addi $a1, $zero, 100
+decideBED:
+    addi $30, $0, 0
+    addi $a1, $zero, 100
     addi $v0, $zero, 42
     syscall
     addi $v0, $zero, 1
@@ -633,7 +638,7 @@ decide_CimaDireita:
     jal direitafan
 decideCDB:
     addi $30, $0, 0
-   addi $a1, $zero, 100
+    addi $a1, $zero, 100
     addi $v0, $zero, 42
     syscall
     addi $v0, $zero, 1
@@ -697,8 +702,7 @@ decideCED:
     bgt $a0, $5, direitafan
     jal esquerdafan
     
-    ######################################## Ghost 2
-    
+######################################## Ghost 2 
 moveGhost2:                             
     lw $11, 28688($9)  #parede cima
     lw $12, 29704($9)  #parede esquerda
@@ -793,13 +797,12 @@ decide_CimaBaixo2:
 
     jal baixofan2
     
-    cimafan2:
+cimafan2:
     addi $27, $zero, 2
     addi $9 $9, -1536
     jal returnpac2
 
 decide_DireitaEsquerda2:
-
     beq $27, 2, esquerdafan2
     beq $27, 3, direitafan2
     jal direitafan2
@@ -837,7 +840,6 @@ decide_CimaEsquerda2:
     addi $30, $30, 50
     bgt $a0, $30, cimafan2
     jal esquerdafan2
-    
    
 decide_CimaDireita2:
     addi $30, $0, 0
@@ -1017,14 +1019,14 @@ decide_baixodireita3:
     bgt $a0, $30, baixofan3
     jal direitafan3
     
-    direitafan3:
+direitafan3:
     addi $28, $zero, 3
   
     
     addi $18, $18, 12
     jal returnpac3
     
-    baixofan3:
+baixofan3:
     addi $28, $zero, 3
     addi $18, $18, 1536
     jal returnpac3
@@ -1035,7 +1037,7 @@ decide_CimaBaixo3:
     
     jal baixofan3
     
-    cimafan3:
+cimafan3:
     addi $28, $zero, 2
     addi $18, $18, -1536
     jal returnpac3
@@ -1094,7 +1096,7 @@ decide_CimaDireita3:
     bgt $a0, $30, cimafan3
     jal direitafan3
     
-    decideBED3:
+decideBED3:
     addi $30, $0, 0
     addi $a1, $zero, 100
     addi $v0, $zero, 42
@@ -1143,13 +1145,13 @@ decideCBED3:
     bgt $a0, $30, baixofan3
     jal esquerdafan3
     
-    decideCEB3:
+decideCEB3:
     addi $30, $0, 0
     addi $a1, $zero, 100
-        addi $v0, $zero, 42 
-        syscall
-        addi $v0, $zero, 1
-        syscall
+    addi $v0, $zero, 42 
+    syscall
+    addi $v0, $zero, 1
+    syscall
     
     move $a0, $a0
    
@@ -1184,7 +1186,7 @@ pinta_fantasma1:                            #pinta e apaga os fantasmas
     sw $24, 2572($10)
     sw $24, 2576($10)
     sw $24, 2580($10)
-    addi $16, $16, 100000     # Increased delay for slower gameplay
+    addi $16, $0, 60000      # Set delay to match Pac-Man speed (this defines ghost speed also for some reason)
     jr $31
 
 apaga_fantasma1:
@@ -1241,7 +1243,6 @@ apaga_fantasma3:
     sw $20, 30704($18)
     sw $20, 30708($18)
     jr $31
-
 
 delay2:
     addi $16, $16, -1

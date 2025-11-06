@@ -2,9 +2,8 @@
 .data
 .text
 
-
-.macro setmap1
-setmap1:
+.macro Draw_Map1
+Draw_Map1:
 lui $10, 0x1001		#Setar o primeiro pixel
 sw $20, 0($10)
 sw $20, 4($10)

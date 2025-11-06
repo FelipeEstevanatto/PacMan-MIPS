@@ -2832,6 +2832,9 @@ sw $23, 30192($10)
 sw $23, 16104($10)
 sw $23, 19020($10)
 sw $23, 29712($10)
+
+mov() # REMOVE SOUND EFFECT FOR TESTING
+
 # Pausa entre as notas (por exemplo, 200 milissegundos)
 li $v0, 32 # Código de serviço para sleep
 li $a0, 30 # Tempo da pausa em milissegundos
