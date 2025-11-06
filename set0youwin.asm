@@ -8199,5 +8199,5 @@ sw $20, 32756($10)
 sw $20, 32760($10)
 sw $20, 32764($10)
 
-Show_YouWin()
+game_win_screen()
 .end_macro
