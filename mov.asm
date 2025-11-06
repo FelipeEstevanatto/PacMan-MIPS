@@ -35,7 +35,7 @@ pinta_pac_direita:          #Movimento pac direira
     sw $22, 5372($8)
     sw $22, 5884($8)
     sw $22, 5888($8)
-    addi $16, $0, 5000
+    addi $16, $0, 50000       # Reduced delay - ghosts were moving faster
     jr $31
 
 para_pac_direita:          # Pauses Pacman movement on right wall
@@ -78,7 +78,7 @@ apaga_pac_direita:                           #apaga o pac man virado para direit
     sw $20, 5372($8)
     sw $20, 5884($8)
     sw $20, 5888($8)
-    addi $16, $0, 5000
+    addi $16, $0, 50000       # Reduced delay - ghosts were moving faster
     jr $31
 
 
@@ -88,7 +88,7 @@ pinta_pac_esquerda:             #Movimento pac esquerda
     sw $22, 5376($8)
     sw $22, 5884($8)
     sw $22, 5888($8)
-    addi $16, $0, 5000
+    addi $16, $0, 50000       # Reduced delay - ghosts were moving faster
     jr $31
 
 para_pac_esquerda:
@@ -131,7 +131,7 @@ apaga_pac_esquerda:
     sw $20, 5376($8)
     sw $20, 5884($8)
     sw $20, 5888($8)
-    addi $16, $0, 5000
+    addi $16, $0, 50000       # Reduced delay - ghosts were moving faster
     jr $31
 
 
@@ -141,7 +141,7 @@ pinta_pac_cima:
     sw $22, 5372($8)
     sw $22, 5376($8)
     sw $22, 5380($8)
-    addi $16, $0, 5000
+    addi $16, $0, 50000       # Reduced delay - ghosts were moving faster
     jr $31
 
 
@@ -151,7 +151,7 @@ apaga_pac_cima:
     sw $20, 5372($8)
     sw $20, 5376($8)
     sw $20, 5380($8)
-    addi $16, $0, 5000
+    addi $16, $0, 50000       # Reduced delay - ghosts were moving faster
     jr $31
 
 
@@ -195,7 +195,7 @@ pinta_pac_baixo:
     sw $22, 4868($8)
     sw $22, 5372($8)
     sw $22, 5380($8)
-    addi $16, $0, 5000
+    addi $16, $0, 50000       # Reduced delay - ghosts were moving faster
     jr $31
 
 
@@ -205,6 +205,7 @@ apaga_pac_baixo:
     sw $20, 4868($8)
     sw $20, 5372($8)
     sw $20, 5380($8)
+    addi $16, $0, 50000       # Reduced delay - ghosts were moving faster
     jr $31
 
 para_pac_baixo:
@@ -454,7 +455,8 @@ delay:
     nop
     bne $16, $0, delay
     jr $31
-    delay_pac:
+    
+delay_pac:
     addi $16, $16, -1
     nop
     bne $16, $0, delay
@@ -1182,7 +1184,7 @@ pinta_fantasma1:                            #pinta e apaga os fantasmas
     sw $24, 2572($10)
     sw $24, 2576($10)
     sw $24, 2580($10)
-    addi $16, $16, 1000
+    addi $16, $16, 100000     # Increased delay for slower gameplay
     jr $31
 
 apaga_fantasma1:

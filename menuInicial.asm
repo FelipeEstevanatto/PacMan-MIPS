@@ -2804,24 +2804,24 @@ sw $18, 27660($10)
 sw $18, 27664($10)
 sw $18, 27668($10)
 menuM:
-li $16, 1000
-lw $15, 68719411204($zero)  #Receber o valor do teclado
-bne $15, 0, mapa
-jal delay_menu
-jal menuM
+    li $16, 1000
+    lw $15, 68719411204($zero)  #Receber o valor do teclado
+    bne $15, 0, mapa
+    jal delay_menu
+    jal menuM
 mapa:
 
 set0Menu()
 
 delay:
-addi $16, $16, -1
-nop
-bne $16, $0, delay
-jr $31
+    addi $16, $16, -1
+    nop
+    bne $16, $0, delay
+    jr $31
 delay_menu:
-addi $16, $16, -1
-nop
-bne $16, $0, delay
-jr $31
+    addi $16, $16, -1
+    nop
+    bne $16, $0, delay
+    jr $31
 .end_macro
 
