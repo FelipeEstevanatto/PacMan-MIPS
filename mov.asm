@@ -475,10 +475,10 @@ ghost1_ai_update:
     lw $13, 2072($10)  #parede direita
     lw $14, 3088($10)  #parede baixo
 ghost1_ai_check_walls:                             #verifica todas possiveis colisões com a parede
-    beq $11, $21, andBaixo
-    beq $12, $21, andDireita
-    beq $13, $21, andEsquerda
-    beq $14, $21, andCima
+    beq $11, $21, ghost1_ai_check_wall_down
+    beq $12, $21, ghost1_ai_check_wall_right
+    beq $13, $21, ghost1_ai_check_wall_left
+    beq $14, $21, ghost1_ai_check_wall_up
     jal ghost1_ai_decide_all_dirs
 ghost1_ai_return:
     beq $26, 1, pintafanE
@@ -490,18 +490,18 @@ ghost1_ai_return:
     beq $26, 7, pintafanCP
     beq $26, 8, pintafanBP
     jal pintafanD
-andBaixo:
-    beq $12, $21, andBaixoDireita
+ghost1_ai_check_wall_down:
+    beq $12, $21, ghost1_ai_check_wall_down_right
 andB2:
     beq $12, $21, ghost1_ai_decide_down_right
     beq $13, $21, ghost1_ai_decide_down_left
     beq $14, $21, decide_DireitaEsquerda
     jal ghost1_ai_decide_down_left_right
-andBaixoDireita:
+ghost1_ai_check_wall_down_right:
     beq $13, $21, ghost1_move_down
     beq $14, $21, ghost1_move_left
     jal andB2
-andDireita:
+ghost1_ai_check_wall_right:
     beq $13, $21, andDireitaEsquerda
 andD2:
     beq $11, $21, ghost1_ai_decide_down_right
@@ -512,17 +512,17 @@ andDireitaEsquerda:
     beq $14, $21, ghost1_move_up
     jal andD2
 
-andEsquerda:
-    beq $11, $21, andEsquerdaBaixo
+ghost1_ai_check_wall_left:
+    beq $11, $21, ghost1_ai_check_wall_left_down
 andE2:
     beq $14, $21, ghost1_ai_decide_up_left
     beq $11, $21, ghost1_ai_decide_down_left
     beq $12, $21, ghost1_ai_decide_up_down
     jal decideCEB
-andEsquerdaBaixo:
+ghost1_ai_check_wall_left_down:
     beq $13, $21, ghost1_move_down
     beq $14, $21, ghost1_move_right
-andCima:
+ghost1_ai_check_wall_up:
     beq $11, $21, decide_DireitaEsquerda
     beq $12, $21, decide_CimaDireita
     beq $13, $21, ghost1_ai_decide_up_left
@@ -709,10 +709,10 @@ ghost2_ai_update:
     lw $13, 29720($9)  #parede direita
     lw $14, 30736($9)  #parede baixo
 ghost2_ai_check_walls:                              #verifica todas possiveis colisões com a parede
-    beq $11, $21, andBaixo2
-    beq $12, $21, andDireita2
-    beq $13, $21, andEsquerda2
-    beq $14, $21, andCima2
+    beq $11, $21, ghost2_ai_check_wall_down
+    beq $12, $21, ghost2_ai_check_wall_right
+    beq $13, $21, ghost2_ai_check_wall_left
+    beq $14, $21, ghost2_ai_check_wall_up
     jal ghost2_ai_decide_all_dirs
 ghost2_ai_return:
     beq $26, 1, pintafanE2
@@ -724,18 +724,18 @@ ghost2_ai_return:
     beq $26, 7, pintafanCP2
     beq $26, 8, pintafanBP2
     jal pintafanD2
-andBaixo2:
-    beq $12, $21, andBaixoDireita2
+ghost2_ai_check_wall_down:
+    beq $12, $21, ghost2_ai_check_wall_down_right
 andB22:
     beq $12, $21, ghost2_ai_decide_down_right
     beq $13, $21, ghost2_ai_decide_down_left
     beq $14, $21, decide_DireitaEsquerda2
     jal ghost2_ai_decide_down_left_right
-andBaixoDireita2:
+ghost2_ai_check_wall_down_right:
     beq $13, $21, ghost2_move_down
     beq $14, $21, ghost2_move_left
     jal andB22
-andDireita2:
+ghost2_ai_check_wall_right:
     beq $13, $21, andDireitaEsquerda2
 andD22:
     beq $11, $21, ghost2_ai_decide_down_right
@@ -747,17 +747,17 @@ andDireitaEsquerda2:
 
     jal andD22
 
-andEsquerda2:
-    beq $11, $21, andEsquerdaBaixo2
+ghost2_ai_check_wall_left:
+    beq $11, $21, ghost2_ai_check_wall_left_down
 andE22:
     beq $14, $21, ghost2_ai_decide_up_left
     beq $11, $21, ghost2_ai_decide_down_left
     beq $12, $21, ghost2_ai_decide_up_down
     jal decideCEB2
-andEsquerdaBaixo2:
+ghost2_ai_check_wall_left_down:
     beq $13, $21, ghost2_move_down
     beq $14, $21, ghost2_move_right
-andCima2:
+ghost2_ai_check_wall_up:
     beq $11, $21, decide_DireitaEsquerda2
     beq $12, $21, decide_CimaDireita2
     beq $13, $21, ghost2_ai_decide_up_left
@@ -950,10 +950,10 @@ ghost3_ai_update:
     lw $13, 30200($18)  #parede direita
     lw $14, 31216($18)  #parede baixo
 ghost3_ai_check_walls:
-    beq $11, $21, andBaixo3                            #verifica todas possiveis colisões com a parede
-    beq $12, $21, andDireita3
-    beq $13, $21, andEsquerda3
-    beq $14, $21, andCima3
+    beq $11, $21, ghost3_ai_check_wall_down                            #verifica todas possiveis colisões com a parede
+    beq $12, $21, ghost3_ai_check_wall_right
+    beq $13, $21, ghost3_ai_check_wall_left
+    beq $14, $21, ghost3_ai_check_wall_up
     jal ghost3_ai_decide_all_dirs
 ghost3_ai_return:
     beq $26, 1, pintafanE3
@@ -965,18 +965,18 @@ ghost3_ai_return:
     beq $26, 7, pintafanCP3
     beq $26, 8, pintafanBP3
     jal pintafanD3
-andBaixo3:
-    beq $12, $21, andBaixoDireita3
+ghost3_ai_check_wall_down:
+    beq $12, $21, ghost3_ai_check_wall_down_right
 andB23:
     beq $12, $21, ghost3_ai_decide_down_right
     beq $13, $21, ghost3_ai_decide_down_left
     beq $14, $21, decide_DireitaEsquerda3
     jal ghost3_ai_decide_down_left_right
-andBaixoDireita3:
+ghost3_ai_check_wall_down_right:
     beq $13, $21, ghost3_move_down
     beq $14, $21, ghost3_move_left
     jal andB23
-andDireita3:
+ghost3_ai_check_wall_right:
     beq $13, $21, andDireitaEsquerda3
 andD23:
     beq $11, $21, ghost3_ai_decide_down_right
@@ -987,17 +987,17 @@ andDireitaEsquerda3:
     beq $14, $21, ghost3_move_up
 
     jal andD23
-andEsquerda3:
-    beq $11, $21, andEsquerdaBaixo3
+ghost3_ai_check_wall_left:
+    beq $11, $21, ghost3_ai_check_wall_left_down
 andE23:
     beq $14, $21, ghost3_ai_decide_up_left
     beq $11, $21, ghost3_ai_decide_down_left
     beq $12, $21, ghost3_ai_decide_up_down
     jal decideCEB3
-andEsquerdaBaixo3:
+ghost3_ai_check_wall_left_down:
     beq $13, $21, ghost3_move_down
     beq $14, $21, ghost3_move_right
-andCima3:
+ghost3_ai_check_wall_up:
     beq $11, $21, decide_DireitaEsquerda3
     beq $12, $21, decide_CimaDireita3
     beq $13, $21, ghost3_ai_decide_up_left
