@@ -16,10 +16,8 @@
 # $10 : Ghost 1 Position Address
 # $18 : Ghost 3 Position Address
 # $26 : Game State/Direction (1=Left, 2=Right, 3=Up, 4=Down, 5-8=Stopped)
-# $29 : Score
+# $29 : Score (accumulates points, resets on level up)
 # $16 : Delay Counter
-
-str1: .asciiz "game_advance_level"
 
 .macro mov
 .text
@@ -45,7 +43,7 @@ main_game_loop: # Core loop of Input and Dispatch for the game
     beq $15, KEY_S, input_handle_down
     j main_game_loop
 
-render_player_right:          #Movimento pac direira
+render_player_right:          # Render Pac-Man facing right
     sw $22, 4860($8)
     sw $22, 4864($8)
     sw $22, 5372($8)
@@ -54,7 +52,7 @@ render_player_right:          #Movimento pac direira
     addi $16, $0, 50000       # Reduced delay - ghosts were moving faster
     jr $31
 
-player_loop_stopped_right:          # Pauses Pacman movement on right wall
+player_loop_stopped_right:    # Pause Pac-Man movement on right wall, update ghosts
     lw $0, KEYBOARD_ADDR
     sw $22, 4860($8)
     sw $22, 4864($8)
@@ -62,25 +60,25 @@ player_loop_stopped_right:          # Pauses Pacman movement on right wall
     sw $22, 5884($8)
     sw $22, 5888($8)
     addi $26, $0, 5               #prende o pac man na parede e move todos fantasmas
-    jal ghost1_ai_update
+    jal update_ghost1_ai
 ghost1_return_stopped_right:
-    jal ghost2_ai_update
+    jal update_ghost2_ai
 ghost2_return_stopped_right:
-    jal ghost3_ai_update
+    jal update_ghost3_ai
 ghost3_return_stopped_right:
     jal render_ghost_1
     jal render_ghost_2
     jal render_ghost_3
-    lw $11, 4860($8)  # Supondo que 4860 seja a posição à esquerda
+    lw $11, 4860($8)  # Check for collision at Pac-Man's center
     beq $11, $24, game_over_sequence
-    beq $11, $25, game_over_sequence                               #colisão com fantasma
+    beq $11, $25, game_over_sequence  # Collision with ghost
     beq $11, $19, game_over_sequence
-    jal general_delay         # Refactored: Unified delay call
+    jal general_delay         # Unified delay call
     jal render_clear_player_right
     jal render_clear_ghost_1
     jal render_clear_ghost_2
     jal render_clear_ghost_3
-    lw $15, KEYBOARD_ADDR                         # Keep on loop until direction change
+    lw $15, KEYBOARD_ADDR                         # Loop until direction change
     beq $15, KEY_A, input_handle_left
     beq $15, KEY_D, input_handle_right
     beq $15, KEY_W, input_handle_up
@@ -88,7 +86,7 @@ ghost3_return_stopped_right:
     j player_loop_stopped_right
 
 
-render_clear_player_right:                           # apaga o pac man virado para direita
+render_clear_player_right:    # Clear Pac-Man facing right
     sw $20, 4860($8)
     sw $20, 4864($8)
     sw $20, 5372($8)
@@ -97,7 +95,7 @@ render_clear_player_right:                           # apaga o pac man virado pa
     addi $16, $0, 10000       # Reduced delay - ghosts were moving faster
     jr $31
 
-render_player_left:             #Movimento pac esquerda
+render_player_left:           # Render Pac-Man facing left
     sw $22, 4860($8)
     sw $22, 4864($8)
     sw $22, 5376($8)
@@ -114,20 +112,20 @@ player_loop_stopped_left:
     sw $22, 5884($8)
     sw $22, 5888($8)                     #recebe valor do teclado
     addi $26, $0, 6
-    jal ghost1_ai_update
-ghost1_return_stopped_left:                          #move os fantasmas - Return target for Ghost 1 when player is stopped left
-    jal ghost2_ai_update
+    jal update_ghost1_ai
+ghost1_return_stopped_left:   # Return point for Ghost 1 when player is stopped left
+    jal update_ghost2_ai
 ghost2_return_stopped_left:
-    jal ghost3_ai_update
+    jal update_ghost3_ai
 ghost3_return_stopped_left:
     jal render_ghost_1
     jal render_ghost_2
     jal render_ghost_3
-    lw $11, 4860($8)  # Supondo que 4860 seja a posição à esquerda
+    lw $11, 4860($8)  # Check for collision at Pac-Man's center
     beq $11, $24, game_over_sequence
     beq $11, $25, game_over_sequence
     beq $11, $19, game_over_sequence
-    jal general_delay         # Refactored: Unified delay call
+    jal general_delay         # Unified delay call
     jal render_clear_player_left
     jal render_clear_ghost_1
     jal render_clear_ghost_2
@@ -149,7 +147,7 @@ render_clear_player_left:
     addi $16, $0, 10000       # Reduced delay - ghosts were moving faster
     jr $31
 
-render_player_up:
+render_player_up:             # Render Pac-Man facing up
     sw $22, 4860($8)
     sw $22, 4868($8)
     sw $22, 5372($8)
@@ -158,7 +156,7 @@ render_player_up:
     addi $16, $0, 10000       # Reduced delay - ghosts were moving faster
     jr $31
 
-render_clear_player_up:
+render_clear_player_up:       # Clear Pac-Man facing up
     sw $20, 4860($8)
     sw $20, 4868($8)
     sw $20, 5372($8)
@@ -176,20 +174,20 @@ player_loop_stopped_up:
     sw $22, 5376($8)
     sw $22, 5380($8)                      #recebe valor do teclado
     addi $26, $0, 7
-    jal ghost1_ai_update
-ghost1_return_stopped_up:                             # Return target for Ghost 1 when player is stopped up.
-    jal ghost2_ai_update                        #movimenta fantasmas
+    jal update_ghost1_ai
+ghost1_return_stopped_up:     # Return point for Ghost 1 when player is stopped up
+    jal update_ghost2_ai
 ghost2_return_stopped_up:
-    jal ghost3_ai_update
+    jal update_ghost3_ai
 ghost3_return_stopped_up:
     jal render_ghost_1
     jal render_ghost_2
     jal render_ghost_3
-    lw $11, 4860($8)  # Supondo que 4860 seja a posição à esquerda
+    lw $11, 4860($8)  # Check for collision at Pac-Man's center
     beq $11, $24, game_over_sequence
     beq $11, $25, game_over_sequence
     beq $11, $19, game_over_sequence
-    jal general_delay         # Refactored: Unified delay call
+    jal general_delay         # Unified delay call
     jal render_clear_player_up
     jal render_clear_ghost_1
     jal render_clear_ghost_2
@@ -202,7 +200,7 @@ ghost3_return_stopped_up:
     j player_loop_stopped_up
 
 
-render_player_down:
+render_player_down:           # Render Pac-Man facing down
     sw $22, 4860($8)
     sw $22, 4864($8)
     sw $22, 4868($8)
@@ -212,7 +210,7 @@ render_player_down:
     jr $31
 
 
-render_clear_player_down:
+render_clear_player_down:     # Clear Pac-Man facing down
     sw $20, 4860($8)
     sw $20, 4864($8)
     sw $20, 4868($8)
@@ -229,20 +227,20 @@ player_loop_stopped_down:
     sw $22, 5372($8)
     sw $22, 5380($8)
     addi $26, $0, 8
-    jal ghost1_ai_update
-ghost1_return_stopped_down:                 # Return target for Ghost 1 when player is stopped down.
-    jal ghost2_ai_update
+    jal update_ghost1_ai
+ghost1_return_stopped_down:   # Return point for Ghost 1 when player is stopped down
+    jal update_ghost2_ai
 ghost2_return_stopped_down:
-    jal ghost3_ai_update
+    jal update_ghost3_ai
 ghost3_return_stopped_down:
     jal render_ghost_1
     jal render_ghost_2
     jal render_ghost_3
-    lw $11, 4860($8)  # Supondo que 4860 seja a posição à esquerda
+    lw $11, 4860($8)  # Check for collision at Pac-Man's center
     beq $11, $24, game_over_sequence
     beq $11, $25, game_over_sequence
     beq $11, $19, game_over_sequence
-    jal general_delay         # Refactored: Unified delay call
+    jal general_delay         # Unified delay call
     jal render_clear_player_down
     jal render_clear_ghost_1
     jal render_clear_ghost_2
@@ -266,35 +264,35 @@ player_loop_moving_left:
     beq $15, KEY_D, input_handle_right
     beq $15, KEY_W, input_handle_up
     beq $15, KEY_S, input_handle_down
-    lw $11, 4856($8)  # Supondo que 4860 seja a posição à esquerda
-    lw $12, 5368($8)  # Supondo que 4860 seja a posição à esquerda
-    lw $13, 5880($8)  # Supondo que 4860 seja a posição à esquerda
+    lw $11, 4856($8)  # Check left pixels for wall
+    lw $12, 5368($8)  # Check left pixels for wall
+    lw $13, 5880($8)  # Check left pixels for wall
     beq $11, $21, player_loop_stopped_left
     beq $12, $21, player_loop_stopped_left
     beq $13, $21, player_loop_stopped_left
-    beq $12, $23, player_score_point_left     # Check for point collection $23 color
+    beq $12, $23, player_score_point_left     # Check for point collection ($23 color)
     jal player_continue_move_left
 player_score_point_left:
-    addi $29, $29, 200
-    beq $29, 1000, game_advance_level
+    addi $29, $29, 200  # Award 200 points per pellet
+    beq $29, 1000, game_advance_level  # Advance level at 1000 points (consistent threshold)
 player_continue_move_left:
     addi $8, $8, -4
     addi $26, $0, 1
-    jal ghost1_ai_update
+    jal update_ghost1_ai
 ghost1_return_moving_left:
-    jal ghost2_ai_update
+    jal update_ghost2_ai
 ghost2_return_moving_left:
-    jal ghost3_ai_update
+    jal update_ghost3_ai
 ghost3_return_moving_left:
     jal render_player_left
     jal render_ghost_1
     jal render_ghost_2
     jal render_ghost_3
-    lw $11, 4860($8)  # Supondo que 4860 seja a posição à esquerda
+    lw $11, 4860($8)  # Check for collision at Pac-Man's center
     beq $11, $24, game_over_sequence
     beq $11, $25, game_over_sequence
     beq $11, $19, game_over_sequence
-    jal general_delay         # Refactored: Unified delay call
+    jal general_delay         # Unified delay call
     jal render_clear_player_left
     jal render_clear_ghost_1
     jal render_clear_ghost_2
@@ -312,42 +310,42 @@ player_loop_moving_right:
     beq $15, KEY_D, input_handle_right
     beq $15, KEY_W, input_handle_up
     beq $15, KEY_S, input_handle_down
-    lw $11, 4872($8)  # Supondo que 4860 seja a posição à esquerda
-    lw $12, 5384($8)  # Supondo que 4860 seja a posição à esquerda
-    lw $13, 5896($8)  # Supondo que 4860 seja a posição à esquerda
+    lw $11, 4872($8)  # Check right pixels for wall
+    lw $12, 5384($8)  # Check right pixels for wall
+    lw $13, 5896($8)  # Check right pixels for wall
     beq $11, $21, player_loop_stopped_right
     beq $12, $21, player_loop_stopped_right
     beq $13, $21, player_loop_stopped_right
-    beq $12, $23, player_score_point_right     # Check for point collection $23 color
+    beq $12, $23, player_score_point_right     # Check for point collection ($23 color)
     jal player_continue_move_right
 player_score_point_right:
-    addi $29, $29, 200
-    beq $29, 200, game_advance_level
+    addi $29, $29, 200  # Award 200 points per pellet
+    beq $29, 1000, game_advance_level  # Advance level at 1000 points (fixed inconsistency)
 player_continue_move_right:
     addi $8, $8, 4
     addi $26, $0, 2
-    jal ghost1_ai_update
-ghost1_return_moving_right:                  # Return target for Ghost 1 when player is moving right.
-    jal ghost2_ai_update
+    jal update_ghost1_ai
+ghost1_return_moving_right:   # Return point for Ghost 1 when player is moving right
+    jal update_ghost2_ai
 ghost2_return_moving_right:
-    jal ghost3_ai_update
+    jal update_ghost3_ai
 ghost3_return_moving_right:
     jal render_player_right
     jal render_ghost_1
     jal render_ghost_2
     jal render_ghost_3
-    lw $11, 4860($8)  # Supondo que 4860 seja a posição à esquerda
+    lw $11, 4860($8)  # Check for collision at Pac-Man's center
     beq $11, $24, game_over_sequence
     beq $11, $25, game_over_sequence
     beq $11, $19, game_over_sequence
-    jal general_delay         # Refactored: Unified delay call
+    jal general_delay         # Unified delay call
     jal render_clear_player_right
     jal render_clear_ghost_1
     jal render_clear_ghost_2
     jal render_clear_ghost_3
     j player_loop_moving_right
 
-game_over_sequence:  #perdeu o jogo
+game_over_sequence:  # Trigger game over
     clearScreen()
     gameover()
 
@@ -355,15 +353,15 @@ game_over_sequence:  #perdeu o jogo
     syscall
 
 game_advance_level:
-    addi $29, $0, 0
-    lui $8, 0x1001		#Setar o primeiro pixel
-    lui $10, 0x1001		#Setar o primeiro pixel
-    lui $9, 0x1001		#Setar o primeiro pixel
-    lui $18, 0x1001		#Setar o primeiro pixel
+    addi $29, $0, 0     # Reset score to 0 on level up (consider accumulating if desired)
+    lui $8, 0x1001		# Reset player position
+    lui $10, 0x1001		# Reset ghost 1 position
+    lui $9, 0x1001		# Reset ghost 2 position
+    lui $18, 0x1001		# Reset ghost 3 position
     addi $17, $17, 1
-    beq $17, 1, load_map_2    #chama segunda fase
-    beq $17, 2, load_map_1    #chama terceira fase
-    beq $17, 3 game_win_screen       #completou tudo
+    beq $17, 1, load_map_2    # Load second level
+    beq $17, 2, load_map_1    # Load third level
+    beq $17, 3, game_win_screen       # All levels completed
 load_map_2:
     clearScreen()
     drawn_map2()
@@ -390,35 +388,35 @@ player_loop_moving_up:
     beq $15, KEY_D, input_handle_right
     beq $15, KEY_W, input_handle_up
     beq $15, KEY_S, input_handle_down
-    lw $11, 4348($8)  # Supondo que 4860 seja a posição à esquerda
-    lw $12, 4352($8)  # Supondo que 4860 seja a posição à esquerda
-    lw $13, 4356($8)  # Supondo que 4860 seja a posição à esquerda
+    lw $11, 4348($8)  # Check up pixels for wall
+    lw $12, 4352($8)  # Check up pixels for wall
+    lw $13, 4356($8)  # Check up pixels for wall
     beq $11, $21, player_loop_stopped_up
     beq $12, $21, player_loop_stopped_up
     beq $13, $21, player_loop_stopped_up
-    beq $12, $23, player_score_point_up     # Check for point collection $23 color
+    beq $12, $23, player_score_point_up     # Check for point collection ($23 color)
     jal player_continue_move_up
 player_score_point_up:
-    addi $29, $29, 200
-    beq $29, 1000, game_advance_level
+    addi $29, $29, 200  # Award 200 points per pellet
+    beq $29, 1000, game_advance_level  # Advance level at 1000 points
 player_continue_move_up:
     addi $8, $8, -512
     addi $26, $0, 3
-    jal ghost1_ai_update
+    jal update_ghost1_ai
 ghost1_return_moving_up:
-    jal ghost2_ai_update
+    jal update_ghost2_ai
 ghost2_return_moving_up:
-    jal ghost3_ai_update
+    jal update_ghost3_ai
 ghost3_return_moving_up:
     jal render_player_up
     jal render_ghost_1
     jal render_ghost_2
     jal render_ghost_3
-    lw $11, 4860($8)  # Supondo que 4860 seja a posição à esquerda
+    lw $11, 4860($8)  # Check for collision at Pac-Man's center
     beq $11, $24, game_over_sequence
     beq $11, $25, game_over_sequence
     beq $11, $19, game_over_sequence
-    jal general_delay         # Refactored: Unified delay call
+    jal general_delay         # Unified delay call
     jal render_clear_player_up
     jal render_clear_ghost_1
     jal render_clear_ghost_2
@@ -436,35 +434,35 @@ player_loop_moving_down:
     beq $15, KEY_D, input_handle_right
     beq $15, KEY_W, input_handle_up
     beq $15, KEY_S, input_handle_down
-    lw $11, 6396($8)  # Supondo que 4860 seja a posição à esquerda
-    lw $12, 6400($8)  # Supondo que 4860 seja a posição à esquerda
-    lw $13, 6404($8)  # Supondo que 4860 seja a posição à esquerda
+    lw $11, 6396($8)  # Check down pixels for wall
+    lw $12, 6400($8)  # Check down pixels for wall
+    lw $13, 6404($8)  # Check down pixels for wall
     beq $11, $21, player_loop_stopped_down
     beq $12, $21, player_loop_stopped_down
     beq $13, $21, player_loop_stopped_down
-    beq $12, $23, player_score_point_down     # Check for point collection $23 color
+    beq $12, $23, player_score_point_down     # Check for point collection ($23 color)
     jal player_continue_move_down
 player_score_point_down:
-    addi $29, $29, 200
-    beq $29, 1000, game_advance_level
+    addi $29, $29, 200  # Award 200 points per pellet
+    beq $29, 1000, game_advance_level  # Advance level at 1000 points
 player_continue_move_down:
     addi $8, $8, 512
     addi $26, $0, 4
-    jal ghost1_ai_update
+    jal update_ghost1_ai
 ghost1_return_moving_down:
-    jal ghost2_ai_update
+    jal update_ghost2_ai
 ghost2_return_moving_down:
-    jal ghost3_ai_update
+    jal update_ghost3_ai
 ghost3_return_moving_down:
     jal render_player_down
     jal render_ghost_1
     jal render_ghost_2
     jal render_ghost_3
-    lw $11, 4860($8)  # Supondo que 4860 seja a posição à esquerda
+    lw $11, 4860($8)  # Check for collision at Pac-Man's center
     beq $11, $24, game_over_sequence
     beq $11, $25, game_over_sequence
     beq $11, $19, game_over_sequence
-    jal general_delay         # Refactored: Unified delay call
+    jal general_delay         # Unified delay call
     jal render_clear_player_down
     jal render_clear_ghost_1
     jal render_clear_ghost_2
@@ -480,243 +478,206 @@ general_delay:
 .text
 
 # EXPLANATION OF CHANGES:
-# 1. Collision Detection: Previously, ghosts only checked the center pixel in the direction of movement.
-#    This caused them to "eat" walls because their corners would clip into the wall before the center hit it.
-#    The new logic checks TWO points (the corners) for each direction.
-#    Example: Moving UP checks the pixel above the Top-Left corner AND the pixel above the Top-Right corner.
-#
-# 2. Speed Control: The speed is defined in the movement labels (e.g., ghost1_move_right).
-#    Look for instructions like 'addi $10, $10, 4'.
-#    - 4 bytes = 1 pixel horizontal movement.
-#    - 512 bytes = 1 pixel vertical movement (assuming 512 bytes per line).
-#    To make ghosts faster, increase these values (e.g., 8 for 2 pixels).
-#    To make them slower, you would need a frame counter to only move every Nth frame, 
-#    since 1 pixel is the minimum atomic movement in this bitmap setup.
+# 1. Collision Detection: Checks two corner pixels per direction to prevent clipping into walls.
+# 2. Speed Control: Adjust movement increments (e.g., 'addi $10, $10, 4' for horizontal) to change speed.
 
-ghost1_ai_update:
-    # UP Check: Check pixels above Top-Left (1036) and Top-Right (1044)
-    # Original was 1040 (Center). 
+update_ghost1_ai:
+    # Check up corners for wall
     lw $11, 1036($10)       
-    beq $11, $21, g1_up_wall_detected
+    beq $11, $21, ghost1_detect_up_wall
     lw $11, 1044($10)       
-g1_up_wall_detected:
-    # $11 now holds the wall color if either corner hit a wall
+ghost1_detect_up_wall:
+    # $11 holds wall color if any corner hit
 
-    # LEFT Check: Check pixels left of Top-Left (1544) and Bottom-Left (2568)
-    # Original was 2056 (Center).
+    # Check left corners for wall
     lw $12, 1544($10)       
-    beq $12, $21, g1_left_wall_detected
+    beq $12, $21, ghost1_detect_left_wall
     lw $12, 2568($10)       
-g1_left_wall_detected:
+ghost1_detect_left_wall:
 
-    # RIGHT Check: Check pixels right of Top-Right (1560) and Bottom-Right (2584)
-    # Original was 2072 (Center).
+    # Check right corners for wall
     lw $13, 1560($10)       
-    beq $13, $21, g1_right_wall_detected
+    beq $13, $21, ghost1_detect_right_wall
     lw $13, 2584($10)       
-g1_right_wall_detected:
+ghost1_detect_right_wall:
 
-    # DOWN Check: Check pixels below Bottom-Left (3084) and Bottom-Right (3092)
-    # Original was 3088 (Center).
+    # Check down corners for wall
     lw $14, 3084($10)       
-    beq $14, $21, g1_down_wall_detected
+    beq $14, $21, ghost1_detect_down_wall
     lw $14, 3092($10)       
-g1_down_wall_detected:
+ghost1_detect_down_wall:
 
-ghost1_ai_check_walls:                             #verifica todas possiveis colisões com a parede
-    beq $11, $21, ghost1_ai_check_wall_down
-    beq $12, $21, ghost1_ai_check_wall_right
-    beq $13, $21, ghost1_ai_check_wall_left
-    beq $14, $21, ghost1_ai_check_wall_up
-    jal ghost1_ai_decide_all_dirs
+ghost1_check_walls:          # Evaluate all possible wall collisions
+    beq $11, $21, ghost1_check_wall_down
+    beq $12, $21, ghost1_check_wall_right
+    beq $13, $21, ghost1_check_wall_left
+    beq $14, $21, ghost1_check_wall_up
+    jal ghost1_decide_all_dirs
 ghost1_ai_return:
     beq $26, 1, ghost1_return_moving_left
     beq $26, 2, ghost1_return_moving_right
     beq $26, 3, ghost1_return_moving_up
     beq $26, 4, ghost1_return_moving_down
-    beq $26, 5, ghost1_return_stopped_right              # Return target for Ghost 1 when player is stopped right.
+    beq $26, 5, ghost1_return_stopped_right
     beq $26, 6, ghost1_return_stopped_left
     beq $26, 7, ghost1_return_stopped_up
     beq $26, 8, ghost1_return_stopped_down
     jal ghost1_return_moving_right
-ghost1_ai_check_wall_down:
-    beq $12, $21, ghost1_ai_check_wall_down_right
-ghost1_ai_check_wall_down_cont:
-    beq $12, $21, ghost1_ai_decide_down_right
-    beq $13, $21, ghost1_ai_decide_down_left
-    beq $14, $21, ghost1_ai_decide_left_right
-    jal ghost1_ai_decide_down_left_right
-ghost1_ai_check_wall_down_right:
+ghost1_check_wall_down:
+    beq $12, $21, ghost1_check_wall_down_right
+ghost1_check_wall_down_cont:
+    beq $12, $21, ghost1_decide_down_right
+    beq $13, $21, ghost1_decide_down_left
+    beq $14, $21, ghost1_decide_left_right
+    jal ghost1_decide_down_left_right
+ghost1_check_wall_down_right:
     beq $13, $21, ghost1_move_down
     beq $14, $21, ghost1_move_left
-    jal ghost1_ai_check_wall_down_cont
-ghost1_ai_check_wall_right:
-    beq $13, $21, ghost1_ai_check_wall_right_left
-ghost1_ai_check_wall_right_cont:
-    beq $11, $21, ghost1_ai_decide_down_right
-    beq $14, $21, ghost1_ai_decide_up_right
-    beq $13, $21, ghost1_ai_decide_up_down
-    jal ghost1_ai_decide_up_right_down
-ghost1_ai_check_wall_right_left:
+    jal ghost1_check_wall_down_cont
+ghost1_check_wall_right:
+    beq $13, $21, ghost1_check_wall_right_left
+ghost1_check_wall_right_cont:
+    beq $11, $21, ghost1_decide_down_right
+    beq $14, $21, ghost1_decide_up_right
+    beq $13, $21, ghost1_decide_up_down
+    jal ghost1_decide_up_right_down
+ghost1_check_wall_right_left:
     beq $14, $21, ghost1_move_up
-    jal ghost1_ai_check_wall_right_cont
+    jal ghost1_check_wall_right_cont
 
-ghost1_ai_check_wall_left:
-    beq $11, $21, ghost1_ai_check_wall_left_down
-ghost1_ai_check_wall_left_cont:
-    beq $14, $21, ghost1_ai_decide_up_left
-    beq $11, $21, ghost1_ai_decide_down_left
-    beq $12, $21, ghost1_ai_decide_up_down
-    jal ghost1_ai_decide_up_left_down
-ghost1_ai_check_wall_left_down:
+ghost1_check_wall_left:
+    beq $11, $21, ghost1_check_wall_left_down
+ghost1_check_wall_left_cont:
+    beq $14, $21, ghost1_decide_up_left
+    beq $11, $21, ghost1_decide_down_left
+    beq $12, $21, ghost1_decide_up_down
+    jal ghost1_decide_up_left_down
+ghost1_check_wall_left_down:
     beq $13, $21, ghost1_move_down
     beq $14, $21, ghost1_move_right
-ghost1_ai_check_wall_up:
-    beq $11, $21, ghost1_ai_decide_left_right
-    beq $12, $21, ghost1_ai_decide_up_right
-    beq $13, $21, ghost1_ai_decide_up_left
-    jal ghost1_ai_decide_up_left_right
-ghost1_ai_decide_down_right:                            #decide através de uma random qual direção vai seguir
-
-addi $30, $0, 0
-
+ghost1_check_wall_up:
+    beq $11, $21, ghost1_decide_left_right
+    beq $12, $21, ghost1_decide_up_right
+    beq $13, $21, ghost1_decide_up_left
+    jal ghost1_decide_up_left_right
+ghost1_decide_down_right:     # Random decision for down-right path
+    addi $30, $0, 0
     addi $a1, $zero, 100
     addi $v0, $zero, 42
     syscall
     addi $v0, $zero, 1
     syscall
-    
     move $a0, $a0
-   
-   
     addi $30, $0, 50
     bgt $a0, $30, ghost1_move_down
     jal ghost1_move_right
     
     ghost1_move_right:
     addi $30, $zero, 3
-  
-    # SPEED CONTROL: Horizontal
-    # Change '4' to '8' to move 2 pixels at a time (faster).
-    # Keep at '4' to match player speed (1 pixel).
+    # Horizontal movement (adjust for speed)
     addi $10, $10, 4
     jal ghost1_ai_return
     
     ghost1_move_down:
     addi $30, $zero, 3
-    # SPEED CONTROL: Vertical
-    # Change '512' to '1024' to move 2 pixels at a time (faster).
+    # Vertical movement (adjust for speed)
     addi $10, $10, 512
     jal ghost1_ai_return
     
-ghost1_ai_decide_up_down:       # (A 2-way "hallway" decision)
+ghost1_decide_up_down:        # 2-way hallway decision
     beq $30, 2, ghost1_move_up
     beq $30, 3, ghost1_move_down 
-    
     jal ghost1_move_down
     
 ghost1_move_up:
     addi $30, $zero, 2
-    # SPEED CONTROL: Vertical Up
+    # Vertical up movement
     addi $10, $10, -512
     jal ghost1_ai_return
 
 
-ghost1_ai_decide_left_right:
+ghost1_decide_left_right:
     beq $30, 2, ghost1_move_left
     beq $30, 3, ghost1_move_right
     jal ghost1_move_right
     
 ghost1_move_left:
     addi $30, $0, 2
-    # SPEED CONTROL: Horizontal Left
+    # Horizontal left movement
     addi $10, $10, -4
     jal ghost1_ai_return
     
-ghost1_ai_decide_down_left:
+ghost1_decide_down_left:
     addi $30, $0, 0
     addi $a1, $zero, 100
     addi $v0, $zero, 42
     syscall
     addi $v0, $zero, 1
     syscall
-    
     move $a0, $a0
-   
     addi $30, $30, 50
     bgt $a0, $30, ghost1_move_down
     jal ghost1_move_left
     
-ghost1_ai_decide_up_left:
+ghost1_decide_up_left:
     addi $30, $0, 0
     addi $a1, $zero, 100
     addi $v0, $zero, 42
     syscall
     addi $v0, $zero, 1
     syscall
-    
     move $a0, $a0
-   
     addi $30, $30, 50
     bgt $a0, $30, ghost1_move_up
     jal ghost1_move_left
     
-   
-ghost1_ai_decide_up_right:
+ghost1_decide_up_right:
     addi $30, $0, 0
     addi $a1, $zero, 100
     addi $v0, $zero, 42
     syscall
     addi $v0, $zero, 1
     syscall
-    
     move $a0, $a0
-   
     addi $30, $30, 50
     bgt $a0, $30, ghost1_move_up
     jal ghost1_move_right
     
-ghost1_ai_decide_down_left_right:   # (A 3-way "T-junction")
+ghost1_decide_down_left_right: # 3-way T-junction decision
     addi $30, $0, 0
     addi $a1, $zero, 100
     addi $v0, $zero, 42
     syscall
     addi $v0, $zero, 1
     syscall
-    
     move $a0, $a0
-   
     addi $30, $30, 30
     addi $5, $5, 60
     bgt $a0, $30, ghost1_move_down
     bgt $a0, $5, ghost1_move_left
     jal ghost1_move_right
-ghost1_ai_decide_up_right_down:
+ghost1_decide_up_right_down:
     addi $30, $0, 0
     addi $a1, $zero, 100
     addi $v0, $zero, 42
     syscall
     addi $v0, $zero, 1
     syscall
-    
     move $a0, $a0
-   
     addi $30, $30, 30
     addi $5, $5, 60
     bgt $a0, $30, ghost1_move_down
     bgt $a0, $5, ghost1_move_up
     jal ghost1_move_right
 
-ghost1_ai_decide_all_dirs:      # (A 4-way intersection)
+ghost1_decide_all_dirs:       # 4-way intersection decision
     addi $30, $0, 0
     addi $a1, $zero, 100 
     addi $v0, $zero, 42 
     syscall
     addi $v0, $zero, 1
     syscall
-    
     move $a0, $a0
-   
     addi $30, $30, 30
     addi $5, $5, 50
     addi $6, $6, 80
@@ -725,70 +686,65 @@ ghost1_ai_decide_all_dirs:      # (A 4-way intersection)
     bgt $a0, $30, ghost1_move_down
     jal ghost1_move_left
     
-ghost1_ai_decide_up_left_down:
+ghost1_decide_up_left_down:
     addi $30, $0, 0
     addi $a1, $zero, 100
     addi $v0, $zero, 42 
     syscall
     addi $v0, $zero, 1
     syscall
-    
     move $a0, $a0
-   
     addi $30, $30, 30
     addi $5, $5, 50
     bgt $a0, $30, ghost1_move_down
     bgt $a0, $5, ghost1_move_up
-    jal ghost1_move_left
-   
-ghost1_ai_decide_up_left_right:
+    jal ghost1_move_left   
+ghost1_decide_up_left_right:
     addi $30, $0, 0
     addi $a1, $zero, 100
     addi $v0, $zero, 42
     syscall
     addi $v0, $zero, 1
     syscall
-    
     move $a0, $a0
-   
     addi $30, $30, 30
     addi $5, $5, 50
-    bgt $a0, $30, ghost1_move_up
-    bgt $a0, $5, ghost1_move_right
+    bgt $a0, $5, ghost1_move_up
+    bgt $a0, $30, ghost1_move_right
     jal ghost1_move_left
     
 ######################################## Ghost 2 
-ghost2_ai_update:                             
-    # UP Check (Corners)
+update_ghost2_ai:                             
+    # Check up corners for wall
     lw $11, 28684($9)
-    beq $11, $21, g2_up_wall
+    beq $11, $21, ghost2_detect_up_wall
     lw $11, 28692($9)
-g2_up_wall:
+ghost2_detect_up_wall:
 
-    # LEFT Check (Corners)
+    # Check left corners for wall
     lw $12, 29192($9)
-    beq $12, $21, g2_left_wall
+    beq $12, $21, ghost2_detect_left_wall
     lw $12, 30216($9)
-g2_left_wall:
+ghost2_detect_left_wall:
 
-    # RIGHT Check (Corners)
+    # Check right corners for wall
     lw $13, 29208($9)
-    beq $13, $21, g2_right_wall
+    beq $13, $21, ghost2_detect_right_wall
     lw $13, 30232($9)
-g2_right_wall:
+ghost2_detect_right_wall:
 
-    # DOWN Check (Corners)
+    # Check down corners for wall
     lw $14, 30732($9)
-    beq $14, $21, g2_down_wall
+    beq $14, $21, ghost2_detect_down_wall
     lw $14, 30740($9)
-g2_down_wall:
+ghost2_detect_down_wall:
 
-ghost2_ai_check_walls:                              #verifica todas possiveis colisões com a parede
-    beq $11, $21, ghost2_ai_check_wall_down
-    beq $12, $21, ghost2_ai_check_wall_right
-    beq $13, $21, ghost2_ai_check_wall_left
-    beq $14, $21, ghost2_ai_check_wall_up
-    jal ghost2_ai_decide_all_dirs
+ghost2_check_walls:           # Evaluate all possible wall collisions
+    beq $11, $21, ghost2_check_wall_down
+    beq $12, $21, ghost2_check_wall_right
+    beq $13, $21, ghost2_check_wall_left
+    beq $14, $21, ghost2_check_wall_up
+    jal ghost2_decide_all_dirs
 ghost2_ai_return:
     beq $26, 1, ghost2_return_moving_left
     beq $26, 2, ghost2_return_moving_right
@@ -799,139 +755,128 @@ ghost2_ai_return:
     beq $26, 7, ghost2_return_stopped_up
     beq $26, 8, ghost2_return_stopped_down
     jal ghost2_return_moving_right
-ghost2_ai_check_wall_down:
-    beq $12, $21, ghost2_ai_check_wall_down_right
-ghost2_ai_check_wall_down_cont:
-    beq $12, $21, ghost2_ai_decide_down_right
-    beq $13, $21, ghost2_ai_decide_down_left
-    beq $14, $21, ghost2_ai_decide_left_right
-    jal ghost2_ai_decide_down_left_right
-ghost2_ai_check_wall_down_right:
+ghost2_check_wall_down:
+    beq $12, $21, ghost2_check_wall_down_right
+ghost2_check_wall_down_cont:
+    beq $12, $21, ghost2_decide_down_right
+    beq $13, $21, ghost2_decide_down_left
+    beq $14, $21, ghost2_decide_left_right
+    jal ghost2_decide_down_left_right
+ghost2_check_wall_down_right:
     beq $13, $21, ghost2_move_down
     beq $14, $21, ghost2_move_left
-    jal ghost2_ai_check_wall_down_cont
-ghost2_ai_check_wall_right:
-    beq $13, $21, ghost2_ai_check_wall_right_left
-ghost2_ai_check_wall_right_cont:
-    beq $11, $21, ghost2_ai_decide_down_right
-    beq $14, $21, ghost2_ai_decide_up_right
-    beq $13, $21, ghost2_ai_decide_up_down
-    jal ghost2_ai_decide_up_right_down
-ghost2_ai_check_wall_right_left:
+    jal ghost2_check_wall_down_cont
+ghost2_check_wall_right:
+    beq $13, $21, ghost2_check_wall_right_left
+ghost2_check_wall_right_cont:
+    beq $11, $21, ghost2_decide_down_right
+    beq $14, $21, ghost2_decide_up_right
+    beq $13, $21, ghost2_decide_up_down
+    jal ghost2_decide_up_right_down
+ghost2_check_wall_right_left:
     beq $14, $21, ghost2_move_up
 
-    jal ghost2_ai_check_wall_right_cont
+    jal ghost2_check_wall_right_cont
 
-ghost2_ai_check_wall_left:
-    beq $11, $21, ghost2_ai_check_wall_left_down
-ghost2_ai_check_wall_left_cont:
-    beq $14, $21, ghost2_ai_decide_up_left
-    beq $11, $21, ghost2_ai_decide_down_left
-    beq $12, $21, ghost2_ai_decide_up_down
-    jal ghost2_ai_decide_up_left_down
-ghost2_ai_check_wall_left_down:
+ghost2_check_wall_left:
+    beq $11, $21, ghost2_check_wall_left_down
+ghost2_check_wall_left_cont:
+    beq $14, $21, ghost2_decide_up_left
+    beq $11, $21, ghost2_decide_down_left
+    beq $12, $21, ghost2_decide_up_down
+    jal ghost2_decide_up_left_down
+ghost2_check_wall_left_down:
     beq $13, $21, ghost2_move_down
     beq $14, $21, ghost2_move_right
-ghost2_ai_check_wall_up:
-    beq $11, $21, ghost2_ai_decide_left_right
-    beq $12, $21, ghost2_ai_decide_up_right
-    beq $13, $21, ghost2_ai_decide_up_left
-    jal ghost2_ai_decide_up_left_right
+ghost2_check_wall_up:
+    beq $11, $21, ghost2_decide_left_right
+    beq $12, $21, ghost2_decide_up_right
+    beq $13, $21, ghost2_decide_up_left
+    jal ghost2_decide_up_left_right
 
-ghost2_ai_decide_down_right:
-    addi $30, $0, 0                           #decide através de uma random qual direção vai seguir
-
+ghost2_decide_down_right:     # Random decision for down-right path
+    addi $30, $0, 0
     addi $a1, $zero, 100
     addi $v0, $zero, 42
     syscall
     addi $v0, $zero, 1
     syscall
-    
     move $a0, $a0
-   
     addi $30, $0, 50
     bgt $a0, $30, ghost2_move_down
     jal ghost2_move_right
     
 ghost2_move_right:
     addi $27, $zero, 3
-  
-    # SPEED CONTROL: Horizontal
+    # Horizontal movement
     addi $9, $9, 4
     jal ghost2_ai_return
     
 ghost2_move_down:
     addi $27, $zero, 3
-    # SPEED CONTROL: Vertical
+    # Vertical movement
     addi $9, $9, 512
     jal ghost2_ai_return
     
-ghost2_ai_decide_up_down:       # (A 2-way "hallway" decision)
+ghost2_decide_up_down:        # 2-way hallway decision
     beq $27, 2, ghost2_move_up
     beq $27, 3, ghost2_move_down
-
     jal ghost2_move_down
     
 ghost2_move_up:
     addi $27, $zero, 2
-    # SPEED CONTROL: Vertical
+    # Vertical up movement
     addi $9, $9, -512
     jal ghost2_ai_return
 
-ghost2_ai_decide_left_right:
+ghost2_decide_left_right:
     beq $27, 2, ghost2_move_left
     beq $27, 3, ghost2_move_right
     jal ghost2_move_right
     
 ghost2_move_left:
     addi $27, $0, 2
-    # SPEED CONTROL: Horizontal
+    # Horizontal left movement
     addi $9, $9, -4
     jal ghost2_ai_return
     
-ghost2_ai_decide_down_left:
+ghost2_decide_down_left:
     addi $30, $0, 0
     addi $a1, $zero, 100
     addi $v0, $zero, 42
     syscall
     addi $v0, $zero, 1
     syscall
-    
     move $a0, $a0
-   
     addi $30, $30, 50
     bgt $a0, $30, ghost2_move_down
     jal ghost2_move_left
     
-ghost2_ai_decide_up_left:
+ghost2_decide_up_left:
     addi $30, $0, 0
     addi $a1, $zero, 100
     addi $v0, $zero, 42
     syscall
     addi $v0, $zero, 1
     syscall
-    
     move $a0, $a0
-   
     addi $30, $30, 50
     bgt $a0, $30, ghost2_move_up
     jal ghost2_move_left
    
-ghost2_ai_decide_up_right:
+ghost2_decide_up_right:
     addi $30, $0, 0
     addi $a1, $zero, 100
     addi $v0, $zero, 42
     syscall
     addi $v0, $zero, 1
     syscall
-    
     move $a0, $a0
-   
     addi $30, $30, 50
     bgt $a0, $30, ghost2_move_up
     jal ghost2_move_right
     
-ghost2_ai_decide_down_left_right:   # (A 3-way "T-junction")
+ghost2_decide_down_left_right: # 3-way T-junction decision
     addi $30, $0, 0
     addi $5, $0, 0
     addi $a1, $zero, 100
@@ -939,16 +884,14 @@ ghost2_ai_decide_down_left_right:   # (A 3-way "T-junction")
     syscall
     addi $v0, $zero, 1
     syscall
-    
     move $a0, $a0
-   
     addi $30, $30, 35
     addi $5, $5, 65
     bgt $a0, $30, ghost2_move_down
     bgt $a0, $5, ghost2_move_left
     jal ghost2_move_right
 
-ghost2_ai_decide_up_right_down:
+ghost2_decide_up_right_down:
     addi $30, $0, 0
     addi $5, $0, 0
     addi $a1, $zero, 100
@@ -956,16 +899,14 @@ ghost2_ai_decide_up_right_down:
     syscall
     addi $v0, $zero, 1
     syscall
-    
     move $a0, $a0
-   
     addi $30, $30, 35
     addi $5, $5, 65
     bgt $a0, $5, ghost2_move_right
     bgt $a0, $30, ghost2_move_up
     jal ghost2_move_down
 
-ghost2_ai_decide_all_dirs:      # (A 4-way intersection)
+ghost2_decide_all_dirs:       # 4-way intersection decision
     addi $30, $0, 0
     addi $5, $0, 0
     addi $6, $0, 0
@@ -974,9 +915,7 @@ ghost2_ai_decide_all_dirs:      # (A 4-way intersection)
     syscall
     addi $v0, $zero, 1
     syscall
-    
     move $a0, $a0
-   
     addi $30, $30, 30
     addi $5, $5, 50
     addi $6, $6, 80
@@ -985,7 +924,7 @@ ghost2_ai_decide_all_dirs:      # (A 4-way intersection)
     bgt $a0, $30, ghost2_move_down
     jal ghost2_move_left
     
-ghost2_ai_decide_up_left_down:
+ghost2_decide_up_left_down:
     addi $30, $0, 0
     addi $5, $0, 0
     addi $a1, $zero, 100
@@ -993,16 +932,13 @@ ghost2_ai_decide_up_left_down:
     syscall
     addi $v0, $zero, 1
     syscall
-
     move $a0, $a0
-   
     addi $30, $30, 35
     addi $5, $5, 65
     bgt $a0, $5, ghost2_move_up
     bgt $a0, $30, ghost2_move_down
-    jal ghost2_move_left
-   
-ghost2_ai_decide_up_left_right:
+    jal ghost2_move_left   
+ghost2_decide_up_left_right:
     addi $30, $0, 0
     addi $5, $0, 0
     addi $a1, $zero, 100
@@ -1010,9 +946,7 @@ ghost2_ai_decide_up_left_right:
     syscall
     addi $v0, $zero, 1
     syscall
-    
     move $a0, $a0
-   
     addi $5, $5, 35
     addi $30, $30, 65
     bgt $a0, $5, ghost2_move_up
@@ -1021,37 +955,37 @@ ghost2_ai_decide_up_left_right:
     
     ########################### Ghost3
     
-ghost3_ai_update:
-    # UP Check (Corners)
+update_ghost3_ai:
+    # Check up corners for wall
     lw $11, 29164($18)
-    beq $11, $21, g3_up_wall
+    beq $11, $21, ghost3_detect_up_wall
     lw $11, 29172($18)
-g3_up_wall:
+ghost3_detect_up_wall:
 
-    # LEFT Check (Corners)
+    # Check left corners for wall
     lw $12, 29672($18)
-    beq $12, $21, g3_left_wall
+    beq $12, $21, ghost3_detect_left_wall
     lw $12, 30696($18)
-g3_left_wall:
+ghost3_detect_left_wall:
 
-    # RIGHT Check (Corners)
+    # Check right corners for wall
     lw $13, 29688($18)
-    beq $13, $21, g3_right_wall
+    beq $13, $21, ghost3_detect_right_wall
     lw $13, 30712($18)
-g3_right_wall:
+ghost3_detect_right_wall:
 
-    # DOWN Check (Corners)
+    # Check down corners for wall
     lw $14, 31212($18)
-    beq $14, $21, g3_down_wall
+    beq $14, $21, ghost3_detect_down_wall
     lw $14, 31220($18)
-g3_down_wall:
+ghost3_detect_down_wall:
 
-ghost3_ai_check_walls:
-    beq $11, $21, ghost3_ai_check_wall_down                            #verifica todas possiveis colisões com a parede
-    beq $12, $21, ghost3_ai_check_wall_right
-    beq $13, $21, ghost3_ai_check_wall_left
-    beq $14, $21, ghost3_ai_check_wall_up
-    jal ghost3_ai_decide_all_dirs
+ghost3_check_walls:           # Evaluate all possible wall collisions
+    beq $11, $21, ghost3_check_wall_down
+    beq $12, $21, ghost3_check_wall_right
+    beq $13, $21, ghost3_check_wall_left
+    beq $14, $21, ghost3_check_wall_up
+    jal ghost3_decide_all_dirs
 ghost3_ai_return:
     beq $26, 1, ghost3_return_moving_left
     beq $26, 2, ghost3_return_moving_right
@@ -1062,179 +996,160 @@ ghost3_ai_return:
     beq $26, 7, ghost3_return_stopped_up
     beq $26, 8, ghost3_return_stopped_down
     jal ghost3_return_moving_right
-ghost3_ai_check_wall_down:
-    beq $12, $21, ghost3_ai_check_wall_down_right
-ghost3_ai_check_wall_down_cont:
-    beq $12, $21, ghost3_ai_decide_down_right
-    beq $13, $21, ghost3_ai_decide_down_left
-    beq $14, $21, ghost3_ai_decide_left_right
-    jal ghost3_ai_decide_down_left_right
-ghost3_ai_check_wall_down_right:
+ghost3_check_wall_down:
+    beq $12, $21, ghost3_check_wall_down_right
+ghost3_check_wall_down_cont:
+    beq $12, $21, ghost3_decide_down_right
+    beq $13, $21, ghost3_decide_down_left
+    beq $14, $21, ghost3_decide_left_right
+    jal ghost3_decide_down_left_right
+ghost3_check_wall_down_right:
     beq $13, $21, ghost3_move_down
     beq $14, $21, ghost3_move_left
-    jal ghost3_ai_check_wall_down_cont
-ghost3_ai_check_wall_right:
-    beq $13, $21, ghost3_ai_check_wall_right_left
-ghost3_ai_check_wall_right_cont:
-    beq $11, $21, ghost3_ai_decide_down_right
-    beq $14, $21, ghost3_ai_decide_up_right
-    beq $13, $21, ghost3_ai_decide_up_down
-    jal ghost3_ai_decide_up_right_down
-ghost3_ai_check_wall_right_left:
+    jal ghost3_check_wall_down_cont
+ghost3_check_wall_right:
+    beq $13, $21, ghost3_check_wall_right_left
+ghost3_check_wall_right_cont:
+    beq $11, $21, ghost3_decide_down_right
+    beq $14, $21, ghost3_decide_up_right
+    beq $13, $21, ghost3_decide_up_down
+    jal ghost3_decide_up_right_down
+ghost3_check_wall_right_left:
     beq $14, $21, ghost3_move_up
 
-    jal ghost3_ai_check_wall_right_cont
-ghost3_ai_check_wall_left:
-    beq $11, $21, ghost3_ai_check_wall_left_down
-ghost3_ai_check_wall_left_cont:
-    beq $14, $21, ghost3_ai_decide_up_left
-    beq $11, $21, ghost3_ai_decide_down_left
-    beq $12, $21, ghost3_ai_decide_up_down
-    jal ghost3_ai_decide_up_left_down
-ghost3_ai_check_wall_left_down:
+    jal ghost3_check_wall_right_cont
+ghost3_check_wall_left:
+    beq $11, $21, ghost3_check_wall_left_down
+ghost3_check_wall_left_cont:
+    beq $14, $21, ghost3_decide_up_left
+    beq $11, $21, ghost3_decide_down_left
+    beq $12, $21, ghost3_decide_up_down
+    jal ghost3_decide_up_left_down
+ghost3_check_wall_left_down:
     beq $13, $21, ghost3_move_down
     beq $14, $21, ghost3_move_right
-ghost3_ai_check_wall_up:
-    beq $11, $21, ghost3_ai_decide_left_right
-    beq $12, $21, ghost3_ai_decide_up_right
-    beq $13, $21, ghost3_ai_decide_up_left
-    jal ghost3_ai_decide_up_left_right
-ghost3_ai_decide_down_right:
-    addi $30, $0, 0                         #decide através de uma random qual direção vai seguir
-
+ghost3_check_wall_up:
+    beq $11, $21, ghost3_decide_left_right
+    beq $12, $21, ghost3_decide_up_right
+    beq $13, $21, ghost3_decide_up_left
+    jal ghost3_decide_up_left_right
+ghost3_decide_down_right:     # Random decision for down-right path
+    addi $30, $0, 0
     addi $a1, $zero, 100
     addi $v0, $zero, 42
     syscall
     addi $v0, $zero, 1
     syscall
-    
     move $a0, $a0
-   
-   
     addi $30, $0, 50
     bgt $a0, $30, ghost3_move_down
     jal ghost3_move_right
     
 ghost3_move_right:
     addi $28, $zero, 3
-  
-    # SPEED CONTROL: Horizontal
+    # Horizontal movement
     addi $18, $18, 4
     jal ghost3_ai_return
     
 ghost3_move_down:
     addi $28, $zero, 3
-    # SPEED CONTROL: Vertical
+    # Vertical movement
     addi $18, $18, 512
     jal ghost3_ai_return
     
-ghost3_ai_decide_up_down:       # (A 2-way "hallway" decision)
+ghost3_decide_up_down:        # 2-way hallway decision
     beq $28, 2, ghost3_move_up
     beq $28, 3, ghost3_move_down
-    
     jal ghost3_move_down
     
 ghost3_move_up:
     addi $28, $zero, 2
-    # SPEED CONTROL: Vertical
+    # Vertical up movement
     addi $18, $18, -512
     jal ghost3_ai_return
 
-ghost3_ai_decide_left_right:
+ghost3_decide_left_right:
     beq $28, 2, ghost3_move_left
     beq $28, 3, ghost3_move_right
     jal ghost3_move_right
     
 ghost3_move_left:
     addi $28, $0, 2
-    # SPEED CONTROL: Horizontal
+    # Horizontal left movement
     addi $18, $18, -4
     jal ghost3_ai_return
     
-ghost3_ai_decide_down_left:
+ghost3_decide_down_left:
     addi $30, $0, 0
     addi $a1, $zero, 100
     addi $v0, $zero, 42
     syscall
     addi $v0, $zero, 1
     syscall
-    
     move $a0, $a0
-   
     addi $30, $30, 50
     bgt $a0, $30, ghost3_move_down
     jal ghost3_move_left
     
-ghost3_ai_decide_up_left:
+ghost3_decide_up_left:
     addi $30, $0, 0
     addi $a1, $zero, 100
     addi $v0, $zero, 42
     syscall
     addi $v0, $zero, 1
     syscall
-    
     move $a0, $a0
-   
     addi $30, $30, 50
     bgt $a0, $30, ghost3_move_up
     jal ghost3_move_left
     
-   
-ghost3_ai_decide_up_right:
+ghost3_decide_up_right:
     addi $30, $0, 0
     addi $a1, $zero, 100
     addi $v0, $zero, 42
     syscall
     addi $v0, $zero, 1
     syscall
-    
     move $a0, $a0
-   
     addi $30, $30, 50
     bgt $a0, $30, ghost3_move_up
     jal ghost3_move_right
     
-ghost3_ai_decide_down_left_right:   # (A 3-way "T-junction")
+ghost3_decide_down_left_right: # 3-way T-junction decision
     addi $30, $0, 0
     addi $a1, $zero, 100
     addi $v0, $zero, 42
     syscall
     addi $v0, $zero, 1
     syscall
-    
     move $a0, $a0
-   
     addi $30, $30, 30
     addi $5, $30, 60
     bgt $a0, $5, ghost3_move_down
     bgt $a0, $30, ghost3_move_left
     jal ghost3_move_right
-ghost3_ai_decide_up_right_down:
+ghost3_decide_up_right_down:
     addi $30, $0, 0
    addi $a1, $zero, 100
     addi $v0, $zero, 42
     syscall
     addi $v0, $zero, 1
     syscall
-    
     move $a0, $a0
-   
     addi $30, $30, 30
     addi $5, $5, 60
     bgt $a0, $5, ghost3_move_down
     bgt $a0, $30, ghost3_move_up
     jal ghost3_move_right
 
-ghost3_ai_decide_all_dirs:      # (A 4-way intersection)
+ghost3_decide_all_dirs:       # 4-way intersection decision
     addi $30, $0, 0
     addi $a1, $zero, 100 
     addi $v0, $zero, 42 
     syscall
     addi $v0, $zero, 1
     syscall
-    
     move $a0, $a0
-   
     addi $30, $30, 30
     addi $5, $5, 50
     addi $6, $6, 80
@@ -1243,39 +1158,34 @@ ghost3_ai_decide_all_dirs:      # (A 4-way intersection)
     bgt $a0, $30, ghost3_move_down
     jal ghost3_move_left
     
-ghost3_ai_decide_up_left_down:
+ghost3_decide_up_left_down:
     addi $30, $0, 0
     addi $a1, $zero, 100
     addi $v0, $zero, 42 
     syscall
     addi $v0, $zero, 1
     syscall
-    
     move $a0, $a0
-   
     addi $30, $30, 30
     addi $5, $5, 50
     bgt $a0, $30, ghost3_move_down
     bgt $a0, $5, ghost3_move_up
-    jal ghost3_move_left
-   
-ghost3_ai_decide_up_left_right:
+    jal ghost3_move_left   
+ghost3_decide_up_left_right:
     addi $30, $0, 0
     addi $a1, $zero, 100
     addi $v0, $zero, 42
     syscall
     addi $v0, $zero, 1
     syscall
-    
     move $a0, $a0
-   
-    addi $30, $30, 30
-    addi $5, $5, 50
+    addi $5, $5, 35
+    addi $30, $30, 65
     bgt $a0, $5, ghost3_move_up
     bgt $a0, $30, ghost3_move_right
     jal ghost3_move_left
     
-render_ghost_1:                            #pinta e apaga os fantasmas
+render_ghost_1:               # Render and clear ghost 1
     sw $24, 1548($10)
     sw $24, 1552($10)
     sw $24, 1556($10)

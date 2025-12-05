@@ -36,6 +36,8 @@ guarda o valor do registrador $0, que é hardwired parar ser 0, então o valor �
 [Macros in MIPS Assembly Language](https://dpetersanderson.github.io/Help/MacrosHelp.html) são o equivalente ao #define em C, e foram utilizados para simplificar alguns valores fixos, como os valores ASCII das teclas WASD, ou endereços de memória MMIO. O eqv é similar, mas não é uma macro, e sim uma substituição direta de texto pelo assembler antes da montagem do código.
 DOC Syscalls: https://asm-editor.specy.app/documentation/mips/syscall
 
+# Macros vs JAL
+Macros são expandidas inline no código, ou seja, o código da macro é inserido diretamente no local onde a macro é chamada. Isso pode levar a um aumento do tamanho do código se a macro for chamada muitas vezes, mas evita a sobrecarga de uma chamada de função. Macros não têm um contexto de pilha separado, então variáveis locais não são possíveis.
 
 ## Problemas atuais
 - [ ] Timing, velocidade de movimento dos fantasmas está muito rápida
