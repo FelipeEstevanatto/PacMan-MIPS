@@ -40,10 +40,12 @@ DOC Syscalls: https://asm-editor.specy.app/documentation/mips/syscall
 Macros são expandidas inline no código, ou seja, o código da macro é inserido diretamente no local onde a macro é chamada. Isso pode levar a um aumento do tamanho do código se a macro for chamada muitas vezes, mas evita a sobrecarga de uma chamada de função. Macros não têm um contexto de pilha separado, então variáveis locais não são possíveis.
 
 ## Problemas atuais
-- [ ] Timing, velocidade de movimento dos fantasmas está muito rápida
+- [x] Timing, velocidade de movimento dos fantasmas está muito rápida
 - [ ] Não faz muito sentido como passar para a próxima fase (quantas bolinhas coletar?)
 - [ ] MUITO código repetido, principalmente na AI dos fantasmas
-- [ ] Aparentemente algumas vezes na diagonal os inimigos não matam o jogador mesmo quando deveriam (colisão não detectada?)
-
+- [x] Aparentemente algumas vezes na diagonal os inimigos não matam o jogador mesmo quando deveriam (colisão não detectada?)
+- [ ] Atualmente o programa utiliza muitos registradores apenas para cores
+- [ ] Utiliza registradores reservados para o sistema como $26 ($k0), $27 ($k1),  $28 ($gp), $29 ($sp) e $30 ($fp)
+ 
 ## Registradores usados
 - $10: Base address do mapa
