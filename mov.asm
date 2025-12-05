@@ -1,8 +1,9 @@
 .include "clearScreen.asm"
+.include "map1.asm"
 .include "map2.asm"
 .include "gameover.asm"
-.include "set0youwin.asm"
-.include "set0map1.asm"
+.include "youwin.asm"
+
 .data
 .eqv    KEYBOARD_ADDR, 68719411204($zero)
 .eqv    KEY_A 97
@@ -366,14 +367,18 @@ game_advance_level:
     beq $17, 3 game_win_screen       #completou tudo
 load_map_2:
     clearScreen()
-    map2()
+    drawn_map2()
     jr $31
 load_map_1:
-    Draw_Map1()
+    clearScreen()
+    drawn_map1()
     jr $31
 game_win_screen:
-    set0youwin()
-    jr $31
+    clearScreen()
+    drawn_youwin()
+    
+    li $v0, 10 # Exit program
+    syscall
 
 input_handle_up:
     sw $0, KEYBOARD_ADDR

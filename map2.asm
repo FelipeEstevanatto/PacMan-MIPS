@@ -1,5 +1,5 @@
-.macro map2
-map2:
+.macro drawn_map2
+drawn_map2:
 sw $21, 0($10)
 sw $21, 4($10)
 sw $21, 8($10)

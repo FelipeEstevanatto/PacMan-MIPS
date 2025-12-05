@@ -1,7 +1,7 @@
-.macro set_map 
+.macro drawn_map1 
 .data
 .text
-set_map:
+drawn_map1:
 sw $21, 0($10)
 sw $21, 4($10)
 sw $21, 8($10)

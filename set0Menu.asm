@@ -2,7 +2,6 @@
 .data
 .text
 
-
 .macro set0Menu
 set0Menu:
 sw $20, 0($10)
