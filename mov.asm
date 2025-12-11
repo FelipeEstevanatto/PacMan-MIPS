@@ -16,7 +16,7 @@
 # $t2 : Ghost 1 Position Address
 # $s2 : Ghost 3 Position Address
 # $k0 : Game State/Direction (1=Left, 2=Right, 3=Up, 4=Down, 5-8=Stopped)
-# $sp : Score (accumulates points, resets on level up)
+# $a3 : Score (accumulates points, resets on level up)
 # $s0 : Delay Counter
 
 .macro mov
@@ -29,8 +29,7 @@ game_initialize:
     addi $s2, $0, 0     # ghost 1 position offset  
     add $s2, $0, $t2    
     add $s1, $0, $0     # maybe level counter
-    addi $sp, $0, 0     # $sp maybe score counter
-    addi $a3, $0, 0
+    addi $a3, $0, 0     # score counter
     addi $fp, $0, 0     # maybe direction tracker for ghost 1
     addi $k1, $0, 0     # maybe direction tracker for ghost 2
     addi $gp, $0, 0     # maybe direction tracker for ghost 3
@@ -273,8 +272,8 @@ player_loop_moving_left:
     beq $t4, $s7, player_score_point_left     # Check for point collection ($s7 color)
     jal player_continue_move_left
 player_score_point_left:
-    addi $sp, $sp, 200  # Award 200 points per pellet
-    beq $sp, 1000, game_advance_level  # Advance level at 1000 points (consistent threshold)
+    addi $a3, $a3, 200  # Award 200 points per pellet
+    beq $a3, 1000, game_advance_level  # Advance level at 1000 points (consistent threshold)
 player_continue_move_left:
     addi $t0, $t0, -4
     addi $k0, $0, 1
@@ -319,8 +318,8 @@ player_loop_moving_right:
     beq $t4, $s7, player_score_point_right     # Check for point collection ($s7 color)
     jal player_continue_move_right
 player_score_point_right:
-    addi $sp, $sp, 200  # Award 200 points per pellet
-    beq $sp, 1000, game_advance_level  # Advance level at 1000 points (fixed inconsistency)
+    addi $a3, $a3, 200  # Award 200 points per pellet
+    beq $a3, 1000, game_advance_level  # Advance level at 1000 points (fixed inconsistency)
 player_continue_move_right:
     addi $t0, $t0, 4
     addi $k0, $0, 2
@@ -353,7 +352,7 @@ game_over_sequence:  # Trigger game over
     syscall
 
 game_advance_level:
-    addi $sp, $0, 0     # Reset score to 0 on level up (consider accumulating if desired)
+    addi $a3, $0, 0     # Reset score to 0 on level up (consider accumulating if desired)
     lui $t0, 0x1001		# Reset player position
     lui $t2, 0x1001		# Reset ghost 1 position
     lui $t1, 0x1001		# Reset ghost 2 position
@@ -397,8 +396,8 @@ player_loop_moving_up:
     beq $t4, $s7, player_score_point_up     # Check for point collection ($s7 color)
     jal player_continue_move_up
 player_score_point_up:
-    addi $sp, $sp, 200  # Award 200 points per pellet
-    beq $sp, 1000, game_advance_level  # Advance level at 1000 points
+    addi $a3, $a3, 200  # Award 200 points per pellet
+    beq $a3, 1000, game_advance_level  # Advance level at 1000 points
 player_continue_move_up:
     addi $t0, $t0, -512
     addi $k0, $0, 3
@@ -443,8 +442,8 @@ player_loop_moving_down:
     beq $t4, $s7, player_score_point_down     # Check for point collection ($s7 color)
     jal player_continue_move_down
 player_score_point_down:
-    addi $sp, $sp, 200  # Award 200 points per pellet
-    beq $sp, 1000, game_advance_level  # Advance level at 1000 points
+    addi $a3, $a3, 200  # Award 200 points per pellet
+    beq $a3, 1000, game_advance_level  # Advance level at 1000 points
 player_continue_move_down:
     addi $t0, $t0, 512
     addi $k0, $0, 4

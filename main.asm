@@ -22,8 +22,8 @@ addi $t8, $0, 0xDC143C  # Crimson
 addi $t9, $0, 0xFF007F  # Pink
 addi $k0, $0, 0xFFA500  # Orange
 addi $k1, $0, 0xFF6600  # Dark Orange
-addi $gp, $0, 0xFF0000  # Red Game Over
-addi $fp, $0, 0xFFFFFF  # White
+# addi $gp, $0, 0xFF0000  # Red Game Over
+# addi $fp, $0, 0xFFFFFF  # White
 
 jr $ra
 
