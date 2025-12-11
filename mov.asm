@@ -32,7 +32,7 @@ game_initialize:
     addi $a3, $0, 0     # score counter
     addi $fp, $0, 0     # maybe direction tracker for ghost 1
     addi $k1, $0, 0     # maybe direction tracker for ghost 2
-    addi $gp, $0, 0     # maybe direction tracker for ghost 3
+    addi $a2, $0, 0     # maybe direction tracker for ghost 3
 
 main_game_loop: # Core loop of Input and Dispatch for the game
     lw $t7, KEYBOARD_ADDR
@@ -679,8 +679,8 @@ ghost1_decide_all_dirs:       # 4-way intersection decision
     move $a0, $a0
     addi $fp, $fp, 30
     addi $a1, $a1, 50
-    addi $a2, $a2, 80
-    bgt $a0, $a2, ghost1_move_right
+    addi $v1, $0, 80
+    bgt $a0, $v1, ghost1_move_right
     bgt $a0, $a1, ghost1_move_up
     bgt $a0, $fp, ghost1_move_down
     jal ghost1_move_left
@@ -908,7 +908,7 @@ ghost2_decide_up_right_down:
 ghost2_decide_all_dirs:       # 4-way intersection decision
     addi $fp, $0, 0
     addi $a1, $0, 0
-    addi $a2, $0, 0
+    addi $v1, $0, 0
     addi $a1, $zero, 100 
     addi $v0, $zero, 42 
     syscall
@@ -917,8 +917,8 @@ ghost2_decide_all_dirs:       # 4-way intersection decision
     move $a0, $a0
     addi $fp, $fp, 30
     addi $a1, $a1, 50
-    addi $a2, $a2, 80
-    bgt $a0, $a2, ghost2_move_right
+    addi $v1, $v1, 80
+    bgt $a0, $v1, ghost2_move_right
     bgt $a0, $a1, ghost2_move_up
     bgt $a0, $fp, ghost2_move_down
     jal ghost2_move_left
@@ -1045,35 +1045,35 @@ ghost3_decide_down_right:     # Random decision for down-right path
     jal ghost3_move_right
     
 ghost3_move_right:
-    addi $gp, $zero, 3
+    addi $a2, $zero, 3
     # Horizontal movement
     addi $s2, $s2, 4
     jal ghost3_ai_return
     
 ghost3_move_down:
-    addi $gp, $zero, 3
+    addi $a2, $zero, 3
     # Vertical movement
     addi $s2, $s2, 512
     jal ghost3_ai_return
     
 ghost3_decide_up_down:        # 2-way hallway decision
-    beq $gp, 2, ghost3_move_up
-    beq $gp, 3, ghost3_move_down
+    beq $a2, 2, ghost3_move_up
+    beq $a2, 3, ghost3_move_down
     jal ghost3_move_down
     
 ghost3_move_up:
-    addi $gp, $zero, 2
+    addi $a2, $zero, 2
     # Vertical up movement
     addi $s2, $s2, -512
     jal ghost3_ai_return
 
 ghost3_decide_left_right:
-    beq $gp, 2, ghost3_move_left
-    beq $gp, 3, ghost3_move_right
+    beq $a2, 2, ghost3_move_left
+    beq $a2, 3, ghost3_move_right
     jal ghost3_move_right
     
 ghost3_move_left:
-    addi $gp, $0, 2
+    addi $a2, $0, 2
     # Horizontal left movement
     addi $s2, $s2, -4
     jal ghost3_ai_return
@@ -1151,8 +1151,8 @@ ghost3_decide_all_dirs:       # 4-way intersection decision
     move $a0, $a0
     addi $fp, $fp, 30
     addi $a1, $a1, 50
-    addi $a2, $a2, 80
-    bgt $a0, $a2, ghost3_move_right
+    addi $v1, $0, 80
+    bgt $a0, $v1, ghost3_move_right
     bgt $a0, $a1, ghost3_move_up
     bgt $a0, $fp, ghost3_move_down
     jal ghost3_move_left

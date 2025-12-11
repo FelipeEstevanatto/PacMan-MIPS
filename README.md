@@ -45,7 +45,7 @@ Macros são expandidas inline no código, ou seja, o código da macro é inserid
 - [ ] MUITO código repetido, principalmente na AI dos fantasmas
 - [x] Aparentemente algumas vezes na diagonal os inimigos não matam o jogador mesmo quando deveriam (colisão não detectada?)
 - [ ] Atualmente o programa utiliza muitos registradores apenas para cores
-- [ ] Utiliza registradores reservados para o sistema como $k0 ($k0), $k1 ($k1),  $gp ($gp), $sp ($sp) e $fp ($fp)
+- [ ] Remover uso de registradores reservados para o sistema como $k0, $k1 ,$gp, e $fp
  
 ## Registradores usados
 - $t2: Base address do mapa
