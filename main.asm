@@ -12,24 +12,24 @@ menu() 		        #To call a function located in another file - associated with t
 
 .set nomacro 		#Marks the end of the external file inclusion
 colors:
-addi $18, $0, 0x00A8FF  # Light Blue
-addi $19, $0, 0x00FF00  # Green
-addi $20, $0, 0x000000	# Black
-addi $21, $0, 0x4169E1	# Blue
-addi $22, $0, 0xFFFF00	# Yellow
-addi $23, $0, 0xCFBA95 	# Score color
-addi $24, $0, 0xDC143C  # Crimson
-addi $25, $0, 0xFF007F  # Pink
-addi $26, $0, 0xFFA500  # Orange
-addi $27, $0, 0xFF6600  # Dark Orange
-addi $28, $0, 0xFF0000  # Red Game Over
-addi $30, $0, 0xFFFFFF  # White
+addi $s2, $0, 0x00A8FF  # Light Blue
+addi $s3, $0, 0x00FF00  # Green
+addi $s4, $0, 0x000000	# Black
+addi $s5, $0, 0x4169E1	# Blue
+addi $s6, $0, 0xFFFF00	# Yellow
+addi $s7, $0, 0xCFBA95 	# Score color
+addi $t8, $0, 0xDC143C  # Crimson
+addi $t9, $0, 0xFF007F  # Pink
+addi $k0, $0, 0xFFA500  # Orange
+addi $k1, $0, 0xFF6600  # Dark Orange
+addi $gp, $0, 0xFF0000  # Red Game Over
+addi $fp, $0, 0xFFFFFF  # White
 
-jr $31
+jr $ra
 
 background_def:
-addi $9, $0, 8192	# Background size
-add $10, $0, $9		# Initial position
-lui $10, 0x1001		# Set the first pixel
-jr $31
+addi $t1, $0, 8192	# Background size
+add $t2, $0, $t1		# Initial position
+lui $t2, 0x1001		# Set the first pixel
+jr $ra
 

@@ -19,9 +19,9 @@ Cores definidas no código no main.asm, desenhadas manualmente pixel a pixel por
 
 
 `68719411204` é um decimal especifico que é interpretado como uma pseudo-instrução que se expande em duas funcções reais diferentes pelo assembler:
-`lw $15, 68719411204($zero)` se expande para as duas instruções MIPS abaixo no código gerado final:
+`lw $t7, 68719411204($zero)` se expande para as duas instruções MIPS abaixo no código gerado final:
 `lui $at, 0xFFFF      # Load 0xFFFF into the upper 16 bits of $at. $at is now 0xFFFF0000`
-`lw  $15, 4($at)      # Load word from address 0xFFFF0000 + 4, which is 0xFFFF0004`
+`lw  $t7, 4($at)      # Load word from address 0xFFFF0000 + 4, which is 0xFFFF0004`
 
 `sw $0, 68719411204($zero)` se expande para as duas instruções MIPS abaixo no código gerado final:
 `lui $at, 0xFFFF      # $at = 0xFFFF0000`
@@ -45,7 +45,7 @@ Macros são expandidas inline no código, ou seja, o código da macro é inserid
 - [ ] MUITO código repetido, principalmente na AI dos fantasmas
 - [x] Aparentemente algumas vezes na diagonal os inimigos não matam o jogador mesmo quando deveriam (colisão não detectada?)
 - [ ] Atualmente o programa utiliza muitos registradores apenas para cores
-- [ ] Utiliza registradores reservados para o sistema como $26 ($k0), $27 ($k1),  $28 ($gp), $29 ($sp) e $30 ($fp)
+- [ ] Utiliza registradores reservados para o sistema como $k0 ($k0), $k1 ($k1),  $gp ($gp), $sp ($sp) e $fp ($fp)
  
 ## Registradores usados
-- $10: Base address do mapa
+- $t2: Base address do mapa
