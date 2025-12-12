@@ -560,14 +560,9 @@ ghost1_check_wall_up:
     beq $t5, $s5, ghost1_decide_up_left
     jal ghost1_decide_up_left_right
 ghost1_decide_down_right:     # Random decision for down-right path
-    addi $fp, $0, 0
-    addi $a1, $zero, 100
-    addi $v0, $zero, 42
-    syscall
-    addi $v0, $zero, 1
-    syscall
-    move $a0, $a0
-    addi $fp, $0, 50
+    get_random($a0, 100)      # Gera um aleatório 0-99 em $a0
+
+    li $fp, 50                # Limite 50
     bgt $a0, $fp, ghost1_move_down
     jal ghost1_move_right
     
@@ -607,109 +602,67 @@ ghost1_move_left:
     jal ghost1_ai_return
     
 ghost1_decide_down_left:
-    addi $fp, $0, 0
-    addi $a1, $zero, 100
-    addi $v0, $zero, 42
-    syscall
-    addi $v0, $zero, 1
-    syscall
-    move $a0, $a0
-    addi $fp, $fp, 50
+    get_random($a0, 100)
+    li $fp, 50
     bgt $a0, $fp, ghost1_move_down
     jal ghost1_move_left
     
 ghost1_decide_up_left:
-    addi $fp, $0, 0
-    addi $a1, $zero, 100
-    addi $v0, $zero, 42
-    syscall
-    addi $v0, $zero, 1
-    syscall
-    move $a0, $a0
-    addi $fp, $fp, 50
+    get_random($a0, 100)
+    li $fp, 50
     bgt $a0, $fp, ghost1_move_up
     jal ghost1_move_left
     
 ghost1_decide_up_right:
-    addi $fp, $0, 0
-    addi $a1, $zero, 100
-    addi $v0, $zero, 42
-    syscall
-    addi $v0, $zero, 1
-    syscall
-    move $a0, $a0
-    addi $fp, $fp, 50
+    get_random($a0, 100)      # Gera um aleatório 0-99 em $a0
+    
+    li $fp, 50                # Limite 50
     bgt $a0, $fp, ghost1_move_up
     jal ghost1_move_right
     
 ghost1_decide_down_left_right: # 3-way T-junction decision
-    addi $fp, $0, 0
-    addi $a1, $zero, 100
-    addi $v0, $zero, 42
-    syscall
-    addi $v0, $zero, 1
-    syscall
-    move $a0, $a0
-    addi $fp, $fp, 30
-    addi $a1, $a1, 60
-    bgt $a0, $fp, ghost1_move_down
-    bgt $a0, $a1, ghost1_move_left
+    get_random($a0, 100)
+    li $t5, 33
+    li $t6, 66
+    bgt $a0, $t6, ghost1_move_left
+    bgt $a0, $t5, ghost1_move_down
     jal ghost1_move_right
+
 ghost1_decide_up_right_down:
-    addi $fp, $0, 0
-    addi $a1, $zero, 100
-    addi $v0, $zero, 42
-    syscall
-    addi $v0, $zero, 1
-    syscall
-    move $a0, $a0
-    addi $fp, $fp, 30
-    addi $a1, $a1, 60
-    bgt $a0, $fp, ghost1_move_down
-    bgt $a0, $a1, ghost1_move_up
+    get_random($a0, 100)
+    li $t5, 33
+    li $t6, 66
+    bgt $a0, $t6, ghost1_move_up
+    bgt $a0, $t5, ghost1_move_down
     jal ghost1_move_right
 
 ghost1_decide_all_dirs:       # 4-way intersection decision
-    addi $fp, $0, 0
-    addi $a1, $zero, 100 
-    addi $v0, $zero, 42 
-    syscall
-    addi $v0, $zero, 1
-    syscall
-    move $a0, $a0
-    addi $fp, $fp, 30
-    addi $a1, $a1, 50
-    addi $v1, $0, 80
-    bgt $a0, $v1, ghost1_move_right
-    bgt $a0, $a1, ghost1_move_up
-    bgt $a0, $fp, ghost1_move_down
-    jal ghost1_move_left
+    get_random($a0, 100)      # Gera aleatório 0-99 em $a0
+    
+    # Define os limites de forma clara
+    li $t5, 30
+    li $t6, 50
+    li $t7, 80
+
+    bgt $a0, $t7, ghost1_move_right # > 80: Direita
+    bgt $a0, $t6, ghost1_move_up    # > 50: Cima
+    bgt $a0, $t5, ghost1_move_down  # > 30: Baixo
+    jal ghost1_move_left            # Senão: Esquerda
     
 ghost1_decide_up_left_down:
-    addi $fp, $0, 0
-    addi $a1, $zero, 100
-    addi $v0, $zero, 42 
-    syscall
-    addi $v0, $zero, 1
-    syscall
-    move $a0, $a0
-    addi $fp, $fp, 30
-    addi $a1, $a1, 50
-    bgt $a0, $fp, ghost1_move_down
-    bgt $a0, $a1, ghost1_move_up
+    get_random($a0, 100)
+    li $t5, 33
+    li $t6, 66
+    bgt $a0, $t6, ghost1_move_up
+    bgt $a0, $t5, ghost1_move_down
     jal ghost1_move_left   
+
 ghost1_decide_up_left_right:
-    addi $fp, $0, 0
-    addi $a1, $zero, 100
-    addi $v0, $zero, 42
-    syscall
-    addi $v0, $zero, 1
-    syscall
-    move $a0, $a0
-    addi $fp, $fp, 30
-    addi $a1, $a1, 50
-    bgt $a0, $a1, ghost1_move_up
-    bgt $a0, $fp, ghost1_move_right
+    get_random($a0, 100)
+    li $t5, 33
+    li $t6, 66
+    bgt $a0, $t6, ghost1_move_up
+    bgt $a0, $t5, ghost1_move_right
     jal ghost1_move_left
     
 ######################################## Ghost 2 
@@ -794,14 +747,9 @@ ghost2_check_wall_up:
     jal ghost2_decide_up_left_right
 
 ghost2_decide_down_right:     # Random decision for down-right path
-    addi $fp, $0, 0
-    addi $a1, $zero, 100
-    addi $v0, $zero, 42
-    syscall
-    addi $v0, $zero, 1
-    syscall
-    move $a0, $a0
-    addi $fp, $0, 50
+    get_random($a0, 100)      # Gera um aleatório 0-99 em $a0
+
+    li $fp, 50                # Limite 50
     bgt $a0, $fp, ghost2_move_down
     jal ghost2_move_right
     
@@ -840,116 +788,70 @@ ghost2_move_left:
     jal ghost2_ai_return
     
 ghost2_decide_down_left:
-    addi $fp, $0, 0
-    addi $a1, $zero, 100
-    addi $v0, $zero, 42
-    syscall
-    addi $v0, $zero, 1
-    syscall
-    move $a0, $a0
-    addi $fp, $fp, 50
+    get_random($a0, 100)      # Gera um aleatório 0-99 em $a0
+    
+    li $fp, 50                # Limite 50
     bgt $a0, $fp, ghost2_move_down
     jal ghost2_move_left
     
 ghost2_decide_up_left:
-    addi $fp, $0, 0
-    addi $a1, $zero, 100
-    addi $v0, $zero, 42
-    syscall
-    addi $v0, $zero, 1
-    syscall
-    move $a0, $a0
-    addi $fp, $fp, 50
+    get_random($a0, 100)      # Gera um aleatório 0-99 em $a0
+    
+    li $fp, 50                # Limite 50
     bgt $a0, $fp, ghost2_move_up
     jal ghost2_move_left
    
 ghost2_decide_up_right:
-    addi $fp, $0, 0
-    addi $a1, $zero, 100
-    addi $v0, $zero, 42
-    syscall
-    addi $v0, $zero, 1
-    syscall
-    move $a0, $a0
-    addi $fp, $fp, 50
+    get_random($a0, 100)      # Gera um aleatório 0-99 em $a0
+    
+    li $fp, 50                # Limite 50
+
     bgt $a0, $fp, ghost2_move_up
     jal ghost2_move_right
     
 ghost2_decide_down_left_right: # 3-way T-junction decision
-    addi $fp, $0, 0
-    addi $a1, $0, 0
-    addi $a1, $zero, 100
-    addi $v0, $zero, 42
-    syscall
-    addi $v0, $zero, 1
-    syscall
-    move $a0, $a0
-    addi $fp, $fp, 35
-    addi $a1, $a1, 65
-    bgt $a0, $fp, ghost2_move_down
-    bgt $a0, $a1, ghost2_move_left
+    get_random($a0, 100)
+    li $t5, 33
+    li $t6, 66
+    bgt $a0, $t6, ghost2_move_left
+    bgt $a0, $t5, ghost2_move_down
     jal ghost2_move_right
 
 ghost2_decide_up_right_down:
-    addi $fp, $0, 0
-    addi $a1, $0, 0
-    addi $a1, $zero, 100
-    addi $v0, $zero, 42
-    syscall
-    addi $v0, $zero, 1
-    syscall
-    move $a0, $a0
-    addi $fp, $fp, 35
-    addi $a1, $a1, 65
-    bgt $a0, $a1, ghost2_move_right
-    bgt $a0, $fp, ghost2_move_up
+    get_random($a0, 100)
+    li $t5, 33
+    li $t6, 66
+    bgt $a0, $t6, ghost2_move_right
+    bgt $a0, $t5, ghost2_move_up
     jal ghost2_move_down
 
-ghost2_decide_all_dirs:       # 4-way intersection decision
-    addi $fp, $0, 0
-    addi $a1, $0, 0
-    addi $v1, $0, 0
-    addi $a1, $zero, 100 
-    addi $v0, $zero, 42 
-    syscall
-    addi $v0, $zero, 1
-    syscall
-    move $a0, $a0
-    addi $fp, $fp, 30
-    addi $a1, $a1, 50
-    addi $v1, $v1, 80
-    bgt $a0, $v1, ghost2_move_right
-    bgt $a0, $a1, ghost2_move_up
-    bgt $a0, $fp, ghost2_move_down
-    jal ghost2_move_left
+ghost2_decide_all_dirs:
+    get_random($a0, 100)      # Gera aleatório 0-99 em $a0
+    
+    # Define os limites de forma clara
+    li $t5, 30
+    li $t6, 50
+    li $t7, 80
+
+    bgt $a0, $t7, ghost2_move_right # > 80: Direita
+    bgt $a0, $t6, ghost2_move_up    # > 50: Cima
+    bgt $a0, $t5, ghost2_move_down  # > 30: Baixo
+    jal ghost2_move_left            # Senão: Esquerda
     
 ghost2_decide_up_left_down:
-    addi $fp, $0, 0
-    addi $a1, $0, 0
-    addi $a1, $zero, 100
-    addi $v0, $zero, 42 
-    syscall
-    addi $v0, $zero, 1
-    syscall
-    move $a0, $a0
-    addi $fp, $fp, 35
-    addi $a1, $a1, 65
-    bgt $a0, $a1, ghost2_move_up
-    bgt $a0, $fp, ghost2_move_down
+    get_random($a0, 100)
+    li $t5, 33
+    li $t6, 66
+    bgt $a0, $t6, ghost2_move_up
+    bgt $a0, $t5, ghost2_move_down
     jal ghost2_move_left   
+
 ghost2_decide_up_left_right:
-    addi $fp, $0, 0
-    addi $a1, $0, 0
-    addi $a1, $zero, 100
-    addi $v0, $zero, 42
-    syscall
-    addi $v0, $zero, 1
-    syscall
-    move $a0, $a0
-    addi $a1, $a1, 35
-    addi $fp, $fp, 65
-    bgt $a0, $a1, ghost2_move_up
-    bgt $a0, $fp, ghost2_move_right
+    get_random($a0, 100)
+    li $t5, 33
+    li $t6, 66
+    bgt $a0, $t6, ghost2_move_right
+    bgt $a0, $t5, ghost2_move_up
     jal ghost2_move_left
     
     ########################### Ghost3
@@ -1033,14 +935,9 @@ ghost3_check_wall_up:
     beq $t5, $s5, ghost3_decide_up_left
     jal ghost3_decide_up_left_right
 ghost3_decide_down_right:     # Random decision for down-right path
-    addi $fp, $0, 0
-    addi $a1, $zero, 100
-    addi $v0, $zero, 42
-    syscall
-    addi $v0, $zero, 1
-    syscall
-    move $a0, $a0
-    addi $fp, $0, 50
+    get_random($a0, 100)      # Gera um aleatório 0-99 em $a0
+    
+    li $fp, 50                # Limite 50
     bgt $a0, $fp, ghost3_move_down
     jal ghost3_move_right
     
@@ -1079,109 +976,68 @@ ghost3_move_left:
     jal ghost3_ai_return
     
 ghost3_decide_down_left:
-    addi $fp, $0, 0
-    addi $a1, $zero, 100
-    addi $v0, $zero, 42
-    syscall
-    addi $v0, $zero, 1
-    syscall
-    move $a0, $a0
-    addi $fp, $fp, 50
+    get_random($a0, 100)      # Gera um aleatório 0-99 em $a0
+    
+    li $fp, 50                # Limite 50
+
     bgt $a0, $fp, ghost3_move_down
     jal ghost3_move_left
     
 ghost3_decide_up_left:
-    addi $fp, $0, 0
-    addi $a1, $zero, 100
-    addi $v0, $zero, 42
-    syscall
-    addi $v0, $zero, 1
-    syscall
-    move $a0, $a0
-    addi $fp, $fp, 50
+    get_random($a0, 100)
+    li $fp, 50
     bgt $a0, $fp, ghost3_move_up
     jal ghost3_move_left
     
 ghost3_decide_up_right:
-    addi $fp, $0, 0
-    addi $a1, $zero, 100
-    addi $v0, $zero, 42
-    syscall
-    addi $v0, $zero, 1
-    syscall
-    move $a0, $a0
-    addi $fp, $fp, 50
+    get_random($a0, 100)
+    li $fp, 50
     bgt $a0, $fp, ghost3_move_up
     jal ghost3_move_right
     
 ghost3_decide_down_left_right: # 3-way T-junction decision
-    addi $fp, $0, 0
-    addi $a1, $zero, 100
-    addi $v0, $zero, 42
-    syscall
-    addi $v0, $zero, 1
-    syscall
-    move $a0, $a0
-    addi $fp, $fp, 30
-    addi $a1, $fp, 60
-    bgt $a0, $a1, ghost3_move_down
-    bgt $a0, $fp, ghost3_move_left
+    get_random($a0, 100)
+    li $t5, 33
+    li $t6, 66
+    bgt $a0, $t6, ghost3_move_down
+    bgt $a0, $t5, ghost3_move_left
     jal ghost3_move_right
+
 ghost3_decide_up_right_down:
-    addi $fp, $0, 0
-   addi $a1, $zero, 100
-    addi $v0, $zero, 42
-    syscall
-    addi $v0, $zero, 1
-    syscall
-    move $a0, $a0
-    addi $fp, $fp, 30
-    addi $a1, $a1, 60
-    bgt $a0, $a1, ghost3_move_down
-    bgt $a0, $fp, ghost3_move_up
+    get_random($a0, 100)
+    li $t5, 33
+    li $t6, 66
+    bgt $a0, $t6, ghost3_move_down
+    bgt $a0, $t5, ghost3_move_up
     jal ghost3_move_right
 
 ghost3_decide_all_dirs:       # 4-way intersection decision
-    addi $fp, $0, 0
-    addi $a1, $zero, 100 
-    addi $v0, $zero, 42 
-    syscall
-    addi $v0, $zero, 1
-    syscall
-    move $a0, $a0
-    addi $fp, $fp, 30
-    addi $a1, $a1, 50
-    addi $v1, $0, 80
-    bgt $a0, $v1, ghost3_move_right
-    bgt $a0, $a1, ghost3_move_up
-    bgt $a0, $fp, ghost3_move_down
-    jal ghost3_move_left
+    get_random($a0, 100)      # Gera aleatório 0-99 em $a0
+    
+    # Define os limites de forma clara
+    li $t5, 30
+    li $t6, 50
+    li $t7, 80
+
+    bgt $a0, $t7, ghost3_move_right # > 80: Direita
+    bgt $a0, $t6, ghost3_move_up    # > 50: Cima
+    bgt $a0, $t5, ghost3_move_down  # > 30: Baixo
+    jal ghost3_move_left            # Senão: Esquerda
     
 ghost3_decide_up_left_down:
-    addi $fp, $0, 0
-    addi $a1, $zero, 100
-    addi $v0, $zero, 42 
-    syscall
-    addi $v0, $zero, 1
-    syscall
-    move $a0, $a0
-    addi $fp, $fp, 30
-    addi $a1, $a1, 50
-    bgt $a0, $fp, ghost3_move_down
-    bgt $a0, $a1, ghost3_move_up
+    get_random($a0, 100)
+    li $t5, 33
+    li $t6, 66
+    bgt $a0, $t6, ghost3_move_up
+    bgt $a0, $t5, ghost3_move_down
     jal ghost3_move_left   
+
 ghost3_decide_up_left_right:
-    addi $fp, $0, 0
-    addi $a1, $zero, 100
-    addi $v0, $zero, 42
-    syscall
-    addi $v0, $zero, 1
-    syscall
-    move $a0, $a0
-    addi $a1, $a1, 35
-    addi $fp, $fp, 65
-    bgt $a0, $a1, ghost3_move_up
-    bgt $a0, $fp, ghost3_move_right
+    get_random($a0, 100)
+    li $t5, 33
+    li $t6, 66
+    bgt $a0, $t6, ghost3_move_up
+    bgt $a0, $t5, ghost3_move_right
     jal ghost3_move_left
     
 render_ghost_1:               # Render and clear ghost 1
@@ -1250,4 +1106,27 @@ render_clear_ghost_3:
     sw $s4, 30704($s2)
     sw $s4, 30708($s2)
     jr $ra
+.end_macro
+
+# Macro to log an integer to the console with a newline
+.macro log_int(%reg)
+    move $a0, %reg          # Load value to print
+    li $v0, 1               # Syscall 1: Print Integer
+    syscall
+
+    li $a0, 10              # ASCII for newline
+    li $v0, 11              # Syscall 11: Print Character
+    syscall
+.end_macro
+
+# Macro to generate a random number between 0 and 'exclusive_range' - 1
+# Ex: get_random(%destiny, 100) generates 0 to 99
+.macro get_random(%destiny, %exclusive_range)
+    li $v0, 42              # Service code for Random Int Range
+    li $a1, %exclusive_range # Exclusive upper limit (e.g., 100)
+    syscall                 # The result is automatically returned in $a0
+    move %destiny, $a0      # Move the result from $a0 to the destiny register
+    
+    # Log the generated number (For Debug)
+    # log_int(%destiny)
 .end_macro

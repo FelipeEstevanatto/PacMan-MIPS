@@ -49,3 +49,17 @@ Macros são expandidas inline no código, ou seja, o código da macro é inserid
  
 ## Registradores usados
 - $t2: Base address do mapa
+
+
+
+## Como criar "funções" com macros
+Como macros são expandidas inline, não há necessidade de criar um contexto de pilha separado. No entanto, é importante garantir que os registradores usados dentro da macro não interfiram com os registradores usados fora dela. Isso pode ser feito salvando e restaurando os registradores necessários dentro da macro, se necessário.
+Exemplo de função para somar 3 números usando macro:
+```
+.macro sumThreeNumbers(%num1, %num2, %num3, %result)
+    add $t0, %num1, %num2
+    add %result, $t0, %num3
+.end_macro
+
+# Uso da macro
+sumThreeNumbers($a0, $a1, $a2, $v0)  # Soma $a0 + $a1 + $a2 e armazena o resultado em $v0
