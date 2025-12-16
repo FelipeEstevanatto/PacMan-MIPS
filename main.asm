@@ -29,7 +29,7 @@ jr $ra
 
 background_def:
 addi $t1, $0, 8192	# Background size
-add $t2, $0, $t1		# Initial position
+add $t2, $0, $t1	# Initial position
 lui $t2, 0x1001		# Set the first pixel
 jr $ra
 

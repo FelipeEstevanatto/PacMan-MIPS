@@ -8,6 +8,7 @@
 .eqv COLOR_PINK 0xFF007F
 .eqv COLOR_GREEN 0x00FF00
 .eqv COLOR_BROWN 0x964B00
+.eqv KEYBOARD_ADDR 68719411204($zero)
 
 .macro menu
 .text
@@ -2833,7 +2834,7 @@ sw $t0, 19424($t2)
 
 menuM:
     li $s0, 1000
-    lw $t7, 68719411204($zero)  #Receber o valor do teclado
+    lw $t7, KEYBOARD_ADDR  #Receber o valor do teclado
     bne $t7, 0, mapa
     jal delay_menu
     jal menuM
